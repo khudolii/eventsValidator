@@ -83,6 +83,10 @@ window.addEventListener('load', function () {
         // Define what happens on successful data submission
         XHR.addEventListener('load', function (event) {
             alert('The file has been sent to the server and verified! You can download the PDF report.');
+            document.getElementById('downloadReport').removeAttribute('disabled');
+            document.getElementById('downloadReport').removeAttribute('class');
+            document.getElementById('downloadReport').setAttribute('class', 'btn btn-info');
+
         });
 
         // Define what happens in case of error
@@ -109,3 +113,10 @@ window.addEventListener('load', function () {
         sendData();
     });
 });
+
+function hideBtn() {
+    document.hhhgs.submit();
+    document.getElementById('downloadReport').setAttribute('disabled', true);
+    document.getElementById('downloadReport').removeAttribute('class');
+    document.getElementById('downloadReport').setAttribute('class', 'btn btn-outline-dark');
+}

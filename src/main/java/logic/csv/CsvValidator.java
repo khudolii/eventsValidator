@@ -1,9 +1,8 @@
 package logic.csv;
 
-import logic.AnalyzeAttributes;
+import logic.ValidatorAttributes;
 import logic.ErrorsLog;
 import logic.csv.csvFileBlocks.CmvList;
-import logic.csv.csvFileBlocks.EldEvents;
 import logic.csv.csvFileBlocks.EldFileHeaderSegment;
 import logic.csv.csvFileBlocks.UserList;
 import logic.dao.DriverDAO;
@@ -12,17 +11,16 @@ import logic.entities.Driver;
 import logic.entities.Event;
 import logic.entities.Truck;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class CsvAnalyzer {
+public class CsvValidator {
 
     private Driver currentDriver;
     private List<Event> events;
-    private List<Driver> coDriversList;
+    private List<Driver> userList;
     private Set<Truck> trucks;
     private CsvReader csvReader;
 
@@ -35,7 +33,7 @@ public class CsvAnalyzer {
     }
 
     public List<Driver> getCoDriversList() {
-        return coDriversList;
+        return userList;
     }
 
     public Set<Truck> getTrucks() {
@@ -46,15 +44,13 @@ public class CsvAnalyzer {
         return csvReader;
     }
 
-    public CsvAnalyzer(InputStreamReader reader) {
+    public CsvValidator(InputStreamReader reader) {
         csvReader = new CsvReader(reader);
         try {
-            System.out.println("22222222");
-            currentDriver = DriverDAO.getDriver(AnalyzeAttributes.getDriverId());
-            //csvReader.readCsvFile("/home/evgeniy/Desktop/Tagie.txt");
+            currentDriver = DriverDAO.getDriver(ValidatorAttributes.getDriverId());
             this.events = EventDAO.getEvents();
             trucks = findTrucks(events);
-            coDriversList = findCoDrivers(trucks);
+            userList = findCoDrivers(trucks);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -64,8 +60,7 @@ public class CsvAnalyzer {
         ErrorsLog.createNewSubAnchor("Required headers:");
         int headerIndex = 0;
         String currentHeader;
-        for (int i = 16; i < csvFileRowsList.size(); i++) {
-            String[] row = csvFileRowsList.get(i);
+        for (String[] row : csvFileRowsList) {
             if (row.length == 1 && headerIndex < HeadersCsvReport.getHeadersList().size()) {
                 currentHeader = Arrays.toString(row).replaceAll("\\[", "").replaceAll("]", "");
                 String resultMessage = "Header: Actual = " + currentHeader + ", Expected = "
@@ -96,23 +91,24 @@ public class CsvAnalyzer {
                 + ", Expected = OLN4", eldFileHeaderSegment.getEldRegistrationId().equals("OLN4"));
         ErrorsLog.writeCsvTestResultToReport("ELD Identifier: Actual = " + eldFileHeaderSegment.getEldIdentifier()
                 + ", Expected = TE0101", eldFileHeaderSegment.getEldIdentifier().equals("TE0101"));
-        if (coDriversList.size() > 0) {
-            //TODO FIX CURRENT DRIVER AS CO DRIVER
-            boolean flag = false;
-            for (Driver coDriver : coDriversList) {
-                if (coDriver.getFirstName().equals(eldFileHeaderSegment.getCoDriverFirstName())
-                        && coDriver.getLastName().equals(eldFileHeaderSegment.getCoDriverLastName())
-                        && coDriver.getLoginName().equals(eldFileHeaderSegment.getCoDriverEldUserName())) {
-                    flag = true;
-                    ErrorsLog.writeCsvTestResultToReport("Co Driver Info: Actual = " + eldFileHeaderSegment.getCoDriverLastName() + ", " + eldFileHeaderSegment.getCoDriverFirstName()
-                            + ", " + eldFileHeaderSegment.getCoDriverEldUserName() + ", Expected: " + coDriver.getLastName() + ", " + coDriver.getFirstName()
-                            + ", " + coDriver.getLoginName(), flag);
-                    break;
-                }
-            }
-            if (!flag && !eldFileHeaderSegment.getCoDriverEldUserName().equals(currentDriver.getLoginName()))
+
+        /* Find the latest co-driver by comparing the User List data and the data in the Co-Driver field. */
+        if (userList.size() > 1) {
+            Driver coDriver = userList
+                    .stream()
+                    .findFirst()
+                    .filter(x -> x.getFirstName().equals(eldFileHeaderSegment.getCoDriverFirstName())
+                            && x.getLastName().equals(eldFileHeaderSegment.getCoDriverLastName())
+                            && x.getLoginName().equals(eldFileHeaderSegment.getCoDriverEldUserName())
+                            && x.getDriverId() != currentDriver.getDriverId())
+                    .orElse(null);
+            if (coDriver != null)
                 ErrorsLog.writeCsvTestResultToReport("Co Driver Info: Actual = " + eldFileHeaderSegment.getCoDriverLastName() + ", " + eldFileHeaderSegment.getCoDriverFirstName()
-                        + ", " + eldFileHeaderSegment.getCoDriverEldUserName() + ", Not found this co driver in DB.", flag);
+                        + ", " + eldFileHeaderSegment.getCoDriverEldUserName() + ", Expected: " + coDriver.getLastName() + ", " + coDriver.getFirstName()
+                        + ", " + coDriver.getLoginName(), true);
+            else
+                ErrorsLog.writeCsvTestResultToReport("Co Driver Info: Actual = " + eldFileHeaderSegment.getCoDriverLastName() + ", " + eldFileHeaderSegment.getCoDriverFirstName()
+                        + ", " + eldFileHeaderSegment.getCoDriverEldUserName() + ", Not found this co driver in DB.", false);
         } else {
             ErrorsLog.writeCsvTestResultToReport("Co Driver Info: Actual = " + eldFileHeaderSegment.getCoDriverLastName() + ", " + eldFileHeaderSegment.getCoDriverFirstName()
                             + ", " + eldFileHeaderSegment.getCoDriverEldUserName() + ", Expected ', , ,'"
@@ -121,79 +117,70 @@ public class CsvAnalyzer {
                             && eldFileHeaderSegment.getCoDriverEldUserName().equals(""));
         }
 
-        boolean flag = false;
-        for (Truck truck : trucks) {
-            if (truck.getTruckNumber().equals(eldFileHeaderSegment.getCmvPowerUnitNumber())
-                    && truck.getVinNumber().equals(eldFileHeaderSegment.getCmvVinNumber())) {
-                flag = true;
-                ErrorsLog.writeCsvTestResultToReport("Current Truck: Actual = " + eldFileHeaderSegment.getCmvPowerUnitNumber() + ", "
-                        + eldFileHeaderSegment.getCmvVinNumber() + ", Expected = " + truck.getTruckNumber() + ", " + truck.getVinNumber(), flag);
-                break;
-            }
-        }
-        if (!flag) {
+        /*Find the last truck by comparing the CMV List data and the CMV data.*/
+        Truck currentTruck = trucks
+                .stream()
+                .findFirst()
+                .filter(x -> x.getTruckNumber().equals(eldFileHeaderSegment.getCmvPowerUnitNumber())
+                        && x.getVinNumber().equals(eldFileHeaderSegment.getCmvVinNumber()))
+                .orElse(null);
+        if (currentTruck != null)
             ErrorsLog.writeCsvTestResultToReport("Current Truck: Actual = " + eldFileHeaderSegment.getCmvPowerUnitNumber() + ", "
-                    + eldFileHeaderSegment.getCmvVinNumber() + ", Expected = Not found this truck in driver events from DB", flag);
-        }
+                    + eldFileHeaderSegment.getCmvVinNumber() + ", Expected = " + currentTruck.getTruckNumber() + ", " + currentTruck.getVinNumber(), true);
+        else
+            ErrorsLog.writeCsvTestResultToReport("Current Truck: Actual = " + eldFileHeaderSegment.getCmvPowerUnitNumber() + ", "
+                    + eldFileHeaderSegment.getCmvVinNumber() + ", Expected = Not found this truck in driver events from DB", false);
     }
 
-    private List<Driver> findCoDrivers(Set<Truck> trucks) throws SQLException {
+    private List<Driver> findCoDrivers(Set<Truck> trucks) {
         List<Driver> coDrivers = new ArrayList<>();
-        for (Truck truck : trucks)
-            coDrivers.addAll(DriverDAO.getDriversByTruck(truck.getTruckId(), AnalyzeAttributes.getDateFrom(), AnalyzeAttributes.getDateTo()));
-        //coDrivers.removeIf(driver -> driver.getLoginName().equals(currentDriver.getLoginName()));
+        trucks
+                .stream()
+                .map(truck -> DriverDAO.getDriversByTruck(truck.getTruckId(), ValidatorAttributes.getDateFrom(), ValidatorAttributes.getDateTo()))
+                .forEach(coDrivers::addAll);
         return coDrivers;
     }
 
     private Set<Truck> findTrucks(List<Event> events) {
-        TreeSet<Truck> trucks = new TreeSet<>();
-        for (Event event : events) {
-            if (event.getTruckId() > 0) {
-                Truck truck = new Truck(event.getTruckId(), event.getTruckNumber(), event.getTruckVin());
-                trucks.add(truck);
-            }
-        }
-        return trucks;
+        return events
+                .stream()
+                .filter(event -> event.getTruckId() > 0)
+                .map(event -> new Truck(event.getTruckId(), event.getTruckNumber(), event.getTruckVin()))
+                .collect(Collectors.toCollection(TreeSet::new));
     }
 
     private void checkCmvList(CmvList cmv) {
-        boolean flag = false;
-        for (Truck truck : trucks) {
-            if (cmv.getCmvPowerUnitNumber().equals(truck.getTruckNumber()) && cmv.getCmvVinNumber().equals(truck.getVinNumber())) {
-                flag = true;
-                ErrorsLog.writeCsvTestResultToReport("CMV: Actual = " + cmv.getCmvPowerUnitNumber() + ", " + cmv.getCmvVinNumber() + ", Expected = " +
-                        truck.getTruckNumber() + ", " + truck.getVinNumber(), flag);
-                break;
-            }
-        }
-        if (!flag) {
-            ErrorsLog.writeCsvTestResultToReport("CMV: Actual = " + cmv.getCmvPowerUnitNumber() + ", " + cmv.getCmvVinNumber() + ", Truck from events not found! ", flag);
-        }
+        Truck truck = trucks.stream()
+                .findFirst()
+                .filter(x -> x.getTruckNumber().equals(cmv.getCmvPowerUnitNumber()) && x.getVinNumber().equals(cmv.getCmvVinNumber())).orElse(null);
+        if (truck != null)
+            ErrorsLog.writeCsvTestResultToReport("CMV: Actual = " + cmv.getCmvPowerUnitNumber() + ", " + cmv.getCmvVinNumber() + ", Expected = " +
+                    truck.getTruckNumber() + ", " + truck.getVinNumber(), true);
+        else
+            ErrorsLog.writeCsvTestResultToReport("CMV: Actual = " + cmv.getCmvPowerUnitNumber() + ", " + cmv.getCmvVinNumber() + ", " +
+                    "Truck from events not found! ", false);
     }
 
     private void checkUserList(UserList user) {
-        boolean flag = false;
-        for (Driver driver : coDriversList) {
-            if (driver.getLastName().equals(user.getUserLastName()) && driver.getFirstName().equals(user.getUserFirstName())) {
-                flag = true;
-                ErrorsLog.writeCsvTestResultToReport("User: Actual = " + user.getUserLastName() + ", " + user.getUserFirstName() + ", Expected = " +
-                        driver.getLastName() + ", " + driver.getFirstName(), flag);
-                break;
-            }
-        }
-        if (!flag) {
-            ErrorsLog.writeCsvTestResultToReport("User: Actual = " + user.getUserLastName() + ", " + user.getUserFirstName() + ", User from events not found! ", flag);
-        }
+        Driver driver = userList.stream()
+                .findFirst()
+                .filter(x -> x.getLastName().equals(user.getUserLastName()) && x.getFirstName().equals(user.getUserFirstName())).orElse(null);
+        if (driver != null)
+            ErrorsLog.writeCsvTestResultToReport("User: Actual = " + user.getUserLastName() + ", " + user.getUserFirstName() + ", Expected = " +
+                    driver.getLastName() + ", " + driver.getFirstName(), true);
+        else
+            ErrorsLog.writeCsvTestResultToReport("User: Actual = " + user.getUserLastName() + ", " + user.getUserFirstName() + ", " +
+                    "User from events not found! ", false);
     }
 
     public void toAnalyzeCsvFile() throws Exception {
         ErrorsLog.createNewAnchor("CSV Structure");
         checkAllRequireHeaders(csvReader.getCsvFileRowsList());
         csvReader.parseEldEvents();
-        EldFileHeaderSegment eldFileHeaderSegment = csvReader.parseEldHeader();
-        if (eldFileHeaderSegment != null && currentDriver != null) {
-            checkEldFileHeaderSegmentAttribute(eldFileHeaderSegment);
-        }
+
+        if (csvReader.getEldFileHeaderSegment() != null && currentDriver != null)
+            checkEldFileHeaderSegmentAttribute(csvReader.getEldFileHeaderSegment());
+
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.USER_LIST);
         csvReader.getUserList().forEach(this::checkUserList);
 
@@ -224,10 +211,10 @@ public class CsvAnalyzer {
     }
 
     public static void main(String[] args) throws Exception {
-        AnalyzeAttributes.setDateTo("2020-08-07");
-        AnalyzeAttributes.setDateFrom("2020-08-01");
+        ValidatorAttributes.setDateTo("2020-08-07");
+        ValidatorAttributes.setDateFrom("2020-08-01");
         ErrorsLog.createReportFile("34131", 40);
-       // CsvAnalyzer csvAnalyzer = new CsvAnalyzer();
+        // CsvAnalyzer csvAnalyzer = new CsvAnalyzer();
         //csvAnalyzer.toAnalyzeCsvFile();
         ErrorsLog.writeResultsToFile();
     }

@@ -51,8 +51,8 @@
             <button class="btn btn-primary">Submit</button>
             <br>
         </form>
-        <form action="getCsvReport" method="GET">
-            <input class="btn btn-outline-info" type="submit" value="Download Report"/>
+        <form id="getCsvReportBtn" name="hhhgs" action="getCsvReport" method="GET">
+            <button id="downloadReport" download disabled="true" class="btn btn-outline-dark" onclick="hideBtn()" type="submit"  value="Download Report">Download Report</button>
         </form>
     </div>
 </div>

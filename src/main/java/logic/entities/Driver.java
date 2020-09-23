@@ -1,6 +1,7 @@
 package logic.entities;
 
 public class Driver {
+    private long driverId;
     private String firstName;
     private String lastName;
     private String loginName;
@@ -9,7 +10,8 @@ public class Driver {
     private String organizationName;
     private String usdotNumber;
 
-    public Driver(String firstName, String lastName, String loginName, String licenseIssuingState, String licenseNumber, String organizationName, String usdotNumber) {
+    public Driver(long driverId, String firstName, String lastName, String loginName, String licenseIssuingState, String licenseNumber, String organizationName, String usdotNumber) {
+        this.driverId = driverId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.loginName = loginName;
@@ -19,25 +21,16 @@ public class Driver {
         this.usdotNumber = usdotNumber;
     }
 
-    @Override
-    public String toString() {
-        return "Driver{" +
-                "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", loginName='" + loginName + '\'' +
-                ", licenseIssuingState='" + licenseIssuingState + '\'' +
-                ", licenseNumber='" + licenseNumber + '\'' +
-                ", organizationName='" + organizationName + '\'' +
-                ", usdotNumber='" + usdotNumber + '\'' +
-                '}';
-    }
-
     public String getFirstName() {
         return firstName;
     }
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    public long getDriverId() {
+        return driverId;
     }
 
     public String getLastName() {

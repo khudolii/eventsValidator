@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -37,8 +36,8 @@ public class ReportServlet extends HttpServlet {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        ErrorsLog.createReportFile(AnalyzeAttributes.getDriverId(), events.size());
-        new Analyzer(events).toAnalyzeEvent();
+        ErrorsLog.createReportFile(ValidatorAttributes.getDriverId(), events.size());
+        new EventsValidator(events).toAnalyzeEvent();
         ServletOutputStream outputStream = resp.getOutputStream();
         ErrorsLog.writeResultsToFile();
         ByteArrayOutputStream byteArrayOutputStream = ErrorsLog.getBout();

@@ -1,6 +1,6 @@
 package logic;
 
-public class AnalyzeAttributes {
+public class ValidatorAttributes {
     public static String dateTo;
     public static String dateFrom;
     public static String driverId;
@@ -10,7 +10,7 @@ public class AnalyzeAttributes {
     }
 
     public static void setDateTo(String dateTo) {
-        AnalyzeAttributes.dateTo = dateTo;
+        ValidatorAttributes.dateTo = dateTo;
     }
 
     public static String getDateFrom() {
@@ -18,7 +18,7 @@ public class AnalyzeAttributes {
     }
 
     public static void setDateFrom(String dateFrom) {
-        AnalyzeAttributes.dateFrom = dateFrom;
+        ValidatorAttributes.dateFrom = dateFrom;
     }
 
     public static String getDriverId() {
@@ -26,6 +26,6 @@ public class AnalyzeAttributes {
     }
 
     public static void setDriverId(String driverId) {
-        AnalyzeAttributes.driverId = driverId;
+        ValidatorAttributes.driverId = driverId;
     }
 }

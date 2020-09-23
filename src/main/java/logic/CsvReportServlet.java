@@ -1,9 +1,6 @@
 package logic;
 
-import logic.csv.CsvAnalyzer;
-import logic.csv.CsvReader;
-import logic.dao.EventDAO;
-import logic.entities.Event;
+import logic.csv.CsvValidator;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -16,11 +13,8 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @MultipartConfig
@@ -37,28 +31,28 @@ public class CsvReportServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        //System.out.println(new BufferedReader(new InputStreamReader(req.getPart("data").getInputStream())).lines().collect(Collectors.joining("\n")));
-        System.out.println(readReqPart(req,"driverId"));
-        System.out.println(readReqPart(req,"dateTo"));
-        System.out.println(readReqPart(req,"dateFrom"));
+        ValidatorAttributes.setDriverId(readReqPart(req, "driverId"));
+        ValidatorAttributes.setDateFrom(readReqPart(req, "dateFrom"));
+        ValidatorAttributes.setDateTo(readReqPart(req, "dateTo"));
 
-       /* InputStreamReader reader = new InputStreamReader(req.getInputStream());
-        CsvAnalyzer csvAnalyzer = new CsvAnalyzer(reader);
-        ErrorsLog.createReportFile(AnalyzeAttributes.getDriverId(), csvAnalyzer.getEvents().size());
+        InputStreamReader reader = new InputStreamReader(req.getInputStream());
+        CsvValidator csvValidator = new CsvValidator(new InputStreamReader(req.getPart("data")
+                .getInputStream()));
+        ErrorsLog.createReportFile(ValidatorAttributes.getDriverId(), csvValidator.getEvents().size());
         try {
-            csvAnalyzer.toAnalyzeCsvFile();
+            csvValidator.toAnalyzeCsvFile();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        new Analyzer(csvAnalyzer.getEvents()).toAnalyzeEvent();
+        new EventsValidator(csvValidator.getEvents()).toAnalyzeEvent();
         ErrorsLog.writeResultsToFile();
-        byteArrayOutputStream = ErrorsLog.getBout();*/
+        byteArrayOutputStream = ErrorsLog.getBout();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setHeader("Content-Disposition", "attachment;" +
-                " filename=\"Report_Driver_" + AnalyzeAttributes.getDriverId() + "_" + new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()) + ".pdf\"");
+                " filename=\"Report_Driver_" + ValidatorAttributes.getDriverId() + "_" + new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()) + ".pdf\"");
         resp.setHeader("Expires", "0");
         resp.setHeader("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
         resp.setHeader("Pragma", "public");

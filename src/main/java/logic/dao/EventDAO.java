@@ -1,6 +1,6 @@
 package logic.dao;
 
-import logic.AnalyzeAttributes;
+import logic.ValidatorAttributes;
 import logic.entities.Event;
 
 import java.sql.ResultSet;
@@ -45,8 +45,8 @@ public class EventDAO {
         try {
             st = DBConnection.getConnection().createStatement();
             //ResultSet resultSet = st.executeQuery(GET_DRIVER_EVENTS_BY_ID  + "'" + "2020-08-01" + " 00:00:00' and '" + "2020-08-07" +" 23:59:59' and  driver_id_1=" + "34131");
-            ResultSet resultSet = st.executeQuery(GET_DRIVER_EVENTS_BY_ID  + "'" + AnalyzeAttributes.getDateFrom()
-                    + " 00:00:00' and '" + AnalyzeAttributes.getDateTo() +" 23:59:59' and  driver_id_1=" + AnalyzeAttributes.getDriverId());
+            ResultSet resultSet = st.executeQuery(GET_DRIVER_EVENTS_BY_ID  + "'" + ValidatorAttributes.getDateFrom()
+                    + " 00:00:00' and '" + ValidatorAttributes.getDateTo() +" 23:59:59' and  driver_id_1=" + ValidatorAttributes.getDriverId());
             while (resultSet.next()) {
                 Event event = new Event
                         .Builder()

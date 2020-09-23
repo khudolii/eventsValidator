@@ -1,7 +1,6 @@
 package logic.csv;
 
 import au.com.bytecode.opencsv.CSVReader;
-import logic.AnalyzeAttributes;
 import logic.ErrorsLog;
 import logic.csv.csvFileBlocks.*;
 
@@ -10,14 +9,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import static java.lang.Integer.parseInt;
 import static logic.csv.HeadersCsvReport.*;
 
 public class CsvReader {
-    private EldFileHeaderSegment eldFileHeaderSegment;
+    private EldFileHeaderSegment eldFileHeaderSegment = null;
     private List<UserList> userList = new ArrayList<>();
     private List<CmvList> cmvList = new ArrayList<>();
     private List<EldEvents> eldEventsList = new ArrayList<>();
@@ -31,28 +29,18 @@ public class CsvReader {
 
     public CsvReader(InputStreamReader reader) {
         CSVReader csvReader = new CSVReader(reader, ',', '"', 0);
-        System.out.println("11111111111");
         try {
             csvFileRowsList = csvReader.readAll();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < csvFileRowsList.size(); i++) {
-            String[] row = csvFileRowsList.get(i);
-            if (Arrays.toString(row).contains("driverId"))
-                AnalyzeAttributes.setDriverId(Arrays.toString(csvFileRowsList.get(i + 2)).replaceAll("\\[", "").replaceAll("\\]", ""));
-            else if (Arrays.toString(row).contains("dateTo"))
-                AnalyzeAttributes.setDateTo(Arrays.toString(csvFileRowsList.get(i + 2)).replaceAll("\\[", "").replaceAll("\\]", ""));
-            else if (Arrays.toString(row).contains("dateFrom"))
-                AnalyzeAttributes.setDateFrom(Arrays.toString(csvFileRowsList.get(i + 2)).replaceAll("\\[", "").replaceAll("\\]", ""));
-        }
-        System.out.println(AnalyzeAttributes.getDriverId());
-        System.out.println(AnalyzeAttributes.getDateFrom());
-        System.out.println(AnalyzeAttributes.getDateTo());
-
     }
 
     public CsvReader() {
+    }
+
+    public EldFileHeaderSegment getEldFileHeaderSegment() {
+        return eldFileHeaderSegment;
     }
 
     public List<String[]> getCsvFileRowsList() {
@@ -98,64 +86,55 @@ public class CsvReader {
     public List<String[]> csvFileRowsList;
 
     public void readCsvFile(String pathToCsvFile) throws IOException {
-        CSVReader reader = new CSVReader(new FileReader(pathToCsvFile), ',', '"', 8);
+        CSVReader reader = new CSVReader(new FileReader(pathToCsvFile), ',', '"', 0);
         this.csvFileRowsList = reader.readAll();
-    }
-
-
-    public EldFileHeaderSegment parseEldHeader() {
-        String header = "";
-        for (int i = 0; i < csvFileRowsList.size(); i++) {
-            String[] row = csvFileRowsList.get(i);
-            if (row.length == 1) {
-                header = Arrays.toString(row).replaceAll("\\[", "").replaceAll("\\]", "");
-                continue;
-            }
-            if (header.equals(ELD_FILE_HEADER_SEGMENT)) {
-                return new EldFileHeaderSegment
-                        .Builder()
-                        .setDriverLastName(csvFileRowsList.get(i)[0])
-                        .setDriverFirstName(csvFileRowsList.get(i)[1])
-                        .setDriverEldUserName(csvFileRowsList.get(i)[2])
-                        .setDriverLicenseIssuingState(csvFileRowsList.get(i)[3])
-                        .setDriverLicenseNumber(csvFileRowsList.get(i )[4])
-                        .setCoDriverLastName(csvFileRowsList.get(i + 1)[0])
-                        .setCoDriverFirstName(csvFileRowsList.get(i + 1)[1])
-                        .setCoDriverEldUserName(csvFileRowsList.get(i + 1)[2])
-                        .setCmvPowerUnitNumber(csvFileRowsList.get(i + 2)[0])
-                        .setCmvVinNumber(csvFileRowsList.get(i + 2)[1])
-                        .setTrailerNumber(csvFileRowsList.get(i + 2)[2])
-                        .setCarriersUSDOTNumber(csvFileRowsList.get(i + 3)[0])
-                        .setCarrierName(csvFileRowsList.get(i + 3)[1])
-                        .setMultiDayBasisUsed(csvFileRowsList.get(i + 3)[2])
-                        .setTimeZoneOffsetFromUtc(csvFileRowsList.get(i + 3)[4])
-                        .setShippingDocumentNumber(csvFileRowsList.get(i + 4)[0])
-                        .setExemptDriverConfiguration(csvFileRowsList.get(i + 4)[1])
-                        .setCurrentDate(csvFileRowsList.get(i + 5)[0])
-                        .setCurrentTime(csvFileRowsList.get(i + 5)[1])
-                        .setCurrentLatitude(csvFileRowsList.get(i + 5)[2])
-                        .setCurrentLongitude(csvFileRowsList.get(i + 5)[3])
-                        .setCurrentTotalVehicleMiles(Double.parseDouble(csvFileRowsList.get(i + 5)[4]))
-                        .setCurrentTotalEngineHours(Double.parseDouble(csvFileRowsList.get(i + 5)[5]))
-                        .setEldRegistrationId(csvFileRowsList.get(i + 6)[0])
-                        .setEldIdentifier(csvFileRowsList.get(i + 6)[1])
-                        .setEldAuthenticated(csvFileRowsList.get(i + 6)[2])
-                        .setOutputFileComment(csvFileRowsList.get(i + 6)[3])
-                        .build();
-            }
-        }
-        return null;
     }
 
     public void parseEldEvents() throws Exception {
         String header = "";
         int expectedElementsInRow = 0;
-        for (String[] row : csvFileRowsList) {
+        for (int i = 0; i < csvFileRowsList.size(); i++) {
+            String[] row = csvFileRowsList.get(i);
+            System.out.println(Arrays.toString(row));
             if (row.length == 1) {
                 header = Arrays.toString(row).replaceAll("\\[", "").replaceAll("\\]", "");
                 continue;
             }
             switch (header) {
+                case ELD_FILE_HEADER_SEGMENT: {
+                    eldFileHeaderSegment = new EldFileHeaderSegment
+                            .Builder()
+                            .setDriverLastName(csvFileRowsList.get(i)[0])
+                            .setDriverFirstName(csvFileRowsList.get(i)[1])
+                            .setDriverEldUserName(csvFileRowsList.get(i)[2])
+                            .setDriverLicenseIssuingState(csvFileRowsList.get(i)[3])
+                            .setDriverLicenseNumber(csvFileRowsList.get(i)[4])
+                            .setCoDriverLastName(csvFileRowsList.get(i + 1)[0])
+                            .setCoDriverFirstName(csvFileRowsList.get(i + 1)[1])
+                            .setCoDriverEldUserName(csvFileRowsList.get(i + 1)[2])
+                            .setCmvPowerUnitNumber(csvFileRowsList.get(i + 2)[0])
+                            .setCmvVinNumber(csvFileRowsList.get(i + 2)[1])
+                            .setTrailerNumber(csvFileRowsList.get(i + 2)[2])
+                            .setCarriersUSDOTNumber(csvFileRowsList.get(i + 3)[0])
+                            .setCarrierName(csvFileRowsList.get(i + 3)[1])
+                            .setMultiDayBasisUsed(csvFileRowsList.get(i + 3)[2])
+                            .setTimeZoneOffsetFromUtc(csvFileRowsList.get(i + 3)[4])
+                            .setShippingDocumentNumber(csvFileRowsList.get(i + 4)[0])
+                            .setExemptDriverConfiguration(csvFileRowsList.get(i + 4)[1])
+                            .setCurrentDate(csvFileRowsList.get(i + 5)[0])
+                            .setCurrentTime(csvFileRowsList.get(i + 5)[1])
+                            .setCurrentLatitude(csvFileRowsList.get(i + 5)[2])
+                            .setCurrentLongitude(csvFileRowsList.get(i + 5)[3])
+                            .setCurrentTotalVehicleMiles(Double.parseDouble(csvFileRowsList.get(i + 5)[4]))
+                            .setCurrentTotalEngineHours(Double.parseDouble(csvFileRowsList.get(i + 5)[5]))
+                            .setEldRegistrationId(csvFileRowsList.get(i + 6)[0])
+                            .setEldIdentifier(csvFileRowsList.get(i + 6)[1])
+                            .setEldAuthenticated(csvFileRowsList.get(i + 6)[2])
+                            .setOutputFileComment(csvFileRowsList.get(i + 6)[3])
+                            .build();
+                    header="";
+                }
+                break;
                 case USER_LIST: {
                     expectedElementsInRow = 5;
                     userList.add(new UserList
@@ -295,15 +274,10 @@ public class CsvReader {
                             .build());
                 }
             }
-            if (row.length != expectedElementsInRow && !header.equals(ELD_FILE_HEADER_SEGMENT) && !header.equals(END_OF_FILE)
-                    && !header.equals(CMV_LIST) && !header.equals(USER_LIST)) {
-                errorsLog.add("Block: " + header + ". Invalid number of elements per line, actual= " + row.length + " ," +
-                        " but expected = " + expectedElementsInRow + ".\n Line: " + Arrays.toString(row));
+            if (row.length != expectedElementsInRow && !header.equals(ELD_FILE_HEADER_SEGMENT) && !header.equals(END_OF_FILE) && !header.equals("")) {
+                ErrorsLog.writeCsvTestResultToReport("Block: " + header + ". Invalid number of elements per line, actual= " + row.length + " ," +
+                        " but expected = " + expectedElementsInRow + ".\n Line: " + Arrays.toString(row),false);
             }
-        }
-        if (errorsLog.size() > 0) {
-            //ErrorsLog.writeErrorsFromCsvFile(errorsLog);
-            errorsLog.clear();
         }
     }
 }

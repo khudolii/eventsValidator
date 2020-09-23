@@ -7,8 +7,8 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Analyzer {
-    private static final Logger log = Logger.getLogger(Analyzer.class);
+public class EventsValidator {
+    private static final Logger log = Logger.getLogger(EventsValidator.class);
     private Event previousEvent = null;
     private Event powerUp = null;
     private Event login = null;
@@ -19,7 +19,7 @@ public class Analyzer {
     private static ArrayList<String> eventErrors = new ArrayList<>();
     private List<Event> eventsList;
 
-    public Analyzer(List eventsList) {
+    public EventsValidator(List eventsList) {
         this.eventsList = eventsList;
     }
 
@@ -53,7 +53,7 @@ public class Analyzer {
         }
         if (powerUp != null) {
             if (powerUp.getEventName() == EventType.POWER_UP
-                    && (roundNumValue(Math.abs(event.getAccumulatedVehicleMiles() - previousEvent.getAccumulatedVehicleMiles())) != diffTotalVehicleMiles ))
+                    && ((roundNumValue(Math.abs(event.getAccumulatedVehicleMiles() - previousEvent.getAccumulatedVehicleMiles()))) - diffTotalVehicleMiles > 0.1 ))
                 eventErrors.add("AVM error. AVM curr.event - AVM prev.event = " + event.getAccumulatedVehicleMiles() + " - " + previousEvent.getAccumulatedVehicleMiles() +
                         " = " + (roundNumValue(Math.abs(event.getAccumulatedVehicleMiles() - previousEvent.getAccumulatedVehicleMiles()))) + " m, but Expected = " + diffTotalVehicleMiles + " m");
         }
