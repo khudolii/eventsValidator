@@ -11,6 +11,8 @@ import java.util.List;
 
 public class EventDAO {
     private final static String GET_DRIVER_EVENTS_BY_ID = "SELECT * FROM eld.eld_event WHERE record_status=1 and eld_sequence is not null and event_timestamp between ";
+    static private final String INSERT_EVENTS = "INSERT INTO eld.eld_event (driver_id_1, truck_id,org_id, record_status, record_origin, " +
+            "event_type, event_code, latitude, longitude, location_description, device_uid, event_timestamp) VALUES (";
     public static String driverId;
     public static String dateFrom;
     public static String dateTo;
@@ -84,4 +86,42 @@ public class EventDAO {
         }
         return eventsList;
     }
+
+    public static boolean createEvents(Event event) throws SQLException {
+        System.out.println(event.toString());
+        Statement st = null;
+            try {
+                st = DBConnection.getConnection().createStatement();
+                    st.executeUpdate(INSERT_EVENTS + event.getDriverId1() + " ," + event.getTruckId() + " ," + event.getOrgId() + " ," + event.getRecordStatus()
+                            + " ," + event.getRecordOrigin() + " ," + event.getEventType() + " ," + event.getEventCode() + " ,'" + event.getLatitude() + "' ,'" + event.getLongitude()
+                            + "' , 'New York, NY, US' , 'server' ,'" + event.getEventTimestamp() + "')");
+            } catch (SQLException e) {
+                System.out.println(e);
+                return false;
+            }
+            finally {
+                if(st != null) st.close();
+            } return true;
+    }
+
+    /*public static boolean createBDX(List<BdxEntity> events) throws SQLException {
+        if (events!=null){
+            Statement st = null;
+            try {
+                st = DBConnection.getConnection().createStatement();
+                for (BdxEntity event:
+                        events) {
+                    st.executeUpdate(INSERT_BDX + event.getOrgId() + " ," + event.getCrossingDate() + " ," + event.getDriverId() + " ," + event.getTruckId()
+                            + " ," + event.getRecordOrigin() + " ," + event.getFromCountryCode() + " ," + event.getToCountryCode() + ")");
+                    log.info("Insert BDX event to DB: " + event.toString());
+                }
+            } catch (SQLException e) {
+                log.error("Insert BDX event is not successful: " + e);
+                return false;
+            }
+            finally {
+                if(st != null) st.close();
+            } return true;
+        }  else return false;
+    }*/
 }
