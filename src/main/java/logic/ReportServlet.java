@@ -21,11 +21,11 @@ import java.util.List;
 public class ReportServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        EventDAO.setDriverId(req.getParameter("driverId"));
-        EventDAO.setDateFrom(req.getParameter("dateFrom"));
-        EventDAO.setDateTo(req.getParameter("dateTo"));
+        ValidatorAttributes.setDriverId(req.getParameter("driverId"));
+        ValidatorAttributes.setDateFrom(req.getParameter("dateFrom"));
+        ValidatorAttributes.setDateTo(req.getParameter("dateTo"));
         resp.setHeader("Content-Disposition", "attachment;" +
-                " filename=\"Report_Driver_"+EventDAO.getDriverId()+"_"+new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date())+".pdf\"");
+                " filename=\"Report_Driver_"+ValidatorAttributes.getDriverId()+"_"+new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date())+".pdf\"");
         resp.setHeader("Expires", "0");
         resp.setHeader("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
         resp.setHeader("Pragma", "public");

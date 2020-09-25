@@ -44,9 +44,8 @@ public class EventDAO {
         Statement st = null;
         try {
             st = DBConnection.getConnection().createStatement();
-            //ResultSet resultSet = st.executeQuery(GET_DRIVER_EVENTS_BY_ID  + "'" + "2020-08-01" + " 00:00:00' and '" + "2020-08-07" +" 23:59:59' and  driver_id_1=" + "34131");
             ResultSet resultSet = st.executeQuery(GET_DRIVER_EVENTS_BY_ID  + "'" + ValidatorAttributes.getDateFrom()
-                    + " 00:00:00' and '" + ValidatorAttributes.getDateTo() +" 23:59:59' and  driver_id_1=" + ValidatorAttributes.getDriverId());
+                    + "' and '" + ValidatorAttributes.getDateTo() +" 23:59:59' and  driver_id_1=" + ValidatorAttributes.getDriverId() + " order by event_timestamp");
             while (resultSet.next()) {
                 Event event = new Event
                         .Builder()
@@ -74,6 +73,10 @@ public class EventDAO {
                         .setLatitude(resultSet.getString("latitude"))
                         .setLongitude(resultSet.getString("longitude"))
                         .setComment(resultSet.getString("comment"))
+                        .setDistanceSinceLastValidCoords(resultSet.getDouble("distance_since_last_valid_coords"))
+                        .setMalfunctionIndicatorStatus(resultSet.getInt("malfunction_indicator_status"))
+                        .setDataDiagnosticEventIndicatorStatus(resultSet.getInt("data_diagnostic_event_idicator_status"))
+                        .setMalfunctionDiagnosticCode(resultSet.getString("malfunction_diagnostic_code"))
                         .build();
                 eventsList.add(event);
             }

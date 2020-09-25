@@ -12,6 +12,7 @@ public class EldEvents extends EventCSV {
     @Override
     public void compareEventsFromCsvAndDb(List<Event> eventsFromDb) {
         Optional<Event> foundEvent = null;
+        setEventTimeStamp();
         try {
             foundEvent = findEventFromCsvInDb(eventsFromDb);
             log.info("*** CHECK: Compare event form CSV and DB: ELD Sequence = " + foundEvent.get().getEldSequence());
@@ -23,14 +24,18 @@ public class EldEvents extends EventCSV {
             checkDoubleValue(foundEvent.get().getElapsedEngineHours(), getElapsedEngineHours(), "getElapsedEngineHours",foundEvent.get().getEldSequence());
             checkCoordinatesValue(foundEvent.get().getLongitude(), getLongitude(), "getLongitude",foundEvent.get().getEldSequence());
             checkCoordinatesValue(foundEvent.get().getLatitude(), getLatitude(), "getLatitude",foundEvent.get().getEldSequence());
-            checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()) , csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp",foundEvent.get().getEldSequence());
-            //checkDoubleValue(foundEvent.get().getDistanceSinceLastValidCoords(), getDistanceLastValidCoordinates(), "getDistanceLastValidCoordinates",foundEvent.get().getEldSequence());
-            //checkIntValue(foundEvent.get().getMalfunctionIndicatorStatus(), getMalfunctionIndicatorStatus(), "getMalfunctionIndicatorStatus",foundEvent.get().getEldSequence());
-            //checkIntValue(foundEvent.get().getDataDiagnosticEventIdicatorStatus(), getDataDiagnosticEventIndicatorStatus(), "getDataDiagnosticEventIndicatorStatus",foundEvent.get().getEldSequence());
+            //checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()) , csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp",foundEvent.get().getEldSequence());
+            System.out.println(setTimeZoneByDriverHomeTerminalTimeZone(foundEvent.get().getEventTimestamp()));
+            System.out.println(getEventTimeStamp());
+            checkEventTimestamp(setTimeZoneByDriverHomeTerminalTimeZone(foundEvent.get().getEventTimestamp()).getTime(), getEventTimeStamp().getTime(), foundEvent.get().getEldSequence());
+
+            checkDoubleValue(foundEvent.get().getDistanceSinceLastValidCoords(), getDistanceLastValidCoordinates(), "getDistanceLastValidCoordinates",foundEvent.get().getEldSequence());
+            checkIntValue(foundEvent.get().getMalfunctionIndicatorStatus(), getMalfunctionIndicatorStatus(), "getMalfunctionIndicatorStatus",foundEvent.get().getEldSequence());
+            checkIntValue(foundEvent.get().getDataDiagnosticEventIndicatorStatus(), getDataDiagnosticEventIndicatorStatus(), "getDataDiagnosticEventIndicatorStatus",foundEvent.get().getEldSequence());
 
         } catch (NoSuchElementException e){
             log.error("* * * * No Such Event!");
-            errorLogs.add("ELD Sequence= " + eventSequence + "-> No Such Event!");
+            errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> No Such Event!");
         }
         finally {
             if(errorLogs.size()>0){

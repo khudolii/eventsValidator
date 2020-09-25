@@ -46,10 +46,10 @@ public class CmvEnginePowerUpAndShutDownEvents  extends EventCSV {
             checkStringValue(foundEvent.get().getTruckVin(),getVinNumber(), "getVinNumber",foundEvent.get().getEldSequence());
             checkShippingTrailerNumbersValue(foundEvent.get().getTrailerNumber(),getTrailerNumber(), "getTrailerNumber",foundEvent.get().getEldSequence());
             checkShippingTrailerNumbersValue(foundEvent.get().getShippingNumber(),getShippingNumber(), "getShippingNumber",foundEvent.get().getEldSequence());
-            //checkStringValue(foundEvent.get().getTruckNumber(),getPowerUnitNumber(), "getPowerUnitNumber",foundEvent.get().getEldSequence());
+            checkStringValue(foundEvent.get().getTruckNumber(),getPowerUnitNumber(), "getPowerUnitNumber",foundEvent.get().getEldSequence());
         } catch (NoSuchElementException e){
             log.error("* * * * No Such Event!");
-            errorLogs.add("ELD Sequence= " + eventSequence + "-> No Such Event!");
+            errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> No Such Event!");
         }
         finally {
             if(errorLogs.size()>0){

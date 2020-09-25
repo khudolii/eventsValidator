@@ -23,11 +23,11 @@ public class UnidentifiedEvents extends EventCSV {
             checkCoordinatesValue(foundEvent.get().getLongitude(), getLongitude(), "getLongitude", foundEvent.get().getEldSequence());
             checkCoordinatesValue(foundEvent.get().getLatitude(), getLatitude(), "getLatitude", foundEvent.get().getEldSequence());
             checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()), csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp", foundEvent.get().getEldSequence());
-            //checkDoubleValue(foundEvent.get().getDistanceSinceLastValidCoords(), getDistanceLastValidCoordinates(), "getDistanceLastValidCoordinates",foundEvent.get().getEldSequence());
-            //checkIntValue(foundEvent.get().getMalfunctionIndicatorStatus(), getMalfunctionIndicatorStatus(), "getMalfunctionIndicatorStatus",foundEvent.get().getEldSequence());
+            checkDoubleValue(foundEvent.get().getDistanceSinceLastValidCoords(), getDistanceLastValidCoordinates(), "getDistanceLastValidCoordinates",foundEvent.get().getEldSequence());
+            checkIntValue(foundEvent.get().getMalfunctionIndicatorStatus(), getMalfunctionIndicatorStatus(), "getMalfunctionIndicatorStatus",foundEvent.get().getEldSequence());
         } catch (NoSuchElementException e) {
             log.error("* * * * No Such Event!");
-            errorLogs.add("ELD Sequence= " + eventSequence + "-> No Such Event!");
+            errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> No Such Event!");
         } finally {
             if (errorLogs.size() > 0) {
                 ErrorsLog.createNewSubAnchor("ELD Sequence = " + eventSequence);

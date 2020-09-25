@@ -34,8 +34,6 @@ public class CsvReportServlet extends HttpServlet {
         ValidatorAttributes.setDriverId(readReqPart(req, "driverId"));
         ValidatorAttributes.setDateFrom(readReqPart(req, "dateFrom"));
         ValidatorAttributes.setDateTo(readReqPart(req, "dateTo"));
-
-        InputStreamReader reader = new InputStreamReader(req.getInputStream());
         CsvValidator csvValidator = new CsvValidator(new InputStreamReader(req.getPart("data")
                 .getInputStream()));
         ErrorsLog.createReportFile(ValidatorAttributes.getDriverId(), csvValidator.getEvents().size());

@@ -15,45 +15,82 @@
 <link rel="stylesheet" href="bootstrap.min.css">
 <script src="SendForm.js"></script>
 <body>
-<div class="row">
-    <div class="col-6">
-        <h4>Check events from DB</h4>
-        <form action="getReport" method="GET">
-            <label>Driver ID</label>
-            <input name="driverId" placeholder="Driver ID" pattern="[0-9]{2,7}"  class="form-control"/>
-            <br>
-            <label>Date From</label>
-            <input name="dateFrom" type="date" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}" class="form-control"/>
-            <br>
-            <label>Date To</label>
-            <input name="dateTo" type="date" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"  class="form-control"/>
-            <br>
-            <input type="submit" value="Submit" class="btn btn-primary"/>
-        </form>
+<div class="row col-sm" style="top: 20px;">
+    <div class="col-sm-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title alert alert-success">Check events from DB</h4>
+                <form action="getReport" method="GET">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Driver ID</span>
+                        </div>
+                        <input name="driverId"  placeholder="Driver ID" pattern="[0-9]{2,7}"
+                               class="form-control"/>
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Truck ID</span>
+                        </div>
+                        <input name="truckId"  placeholder="Truck ID" pattern="[0-9]{2,7}"
+                               class="form-control"/>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Date From and Date To</span>
+                        </div>
+                        <input name="dateFrom" type="date" required
+                               pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
+                               class="form-control"/>
+                        <input name="dateTo" type="date" required
+                               pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
+                               class="form-control"/>
+                    </div>
+                    <br>
+                        <input type="submit" value="Generate report" class="btn btn-primary btn-lg btn-block"/>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="col-6">
-        <h4>Check CSV file</h4>
-        <form id="csvForm" enctype="multipart/form-data" method="post" class="form-group">
-            <label>Driver ID</label>
-            <input id="driverId" placeholder="Driver ID" name="driverId" pattern="[0-9]{2,7}" class="form-control">
-            <br>
-            <label>Date From</label>
-            <input id="dateFrom" name="dateFrom" type="date"
-                   pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"  class="form-control"/>
-            <br>
-            <label>Date To</label>
-            <input id="dateTo" name="dateTo" type="date"
-                   pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"  class="form-control"/>
-            <br>
-            <label>CSV </label>
-            <input id="data" name="data" type="file" class="btn btn-outline-info" accept="text/txt"><br>
-            <br>
-            <button class="btn btn-primary">Submit</button>
-            <br>
-        </form>
-        <form id="getCsvReportBtn" name="hhhgs" action="getCsvReport" method="GET">
-            <button id="downloadReport" download disabled="true" class="btn btn-outline-dark" onclick="hideBtn()" type="submit"  value="Download Report">Download Report</button>
-        </form>
+    <div class="col-sm-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title alert alert-primary">Check CSV file</h4>
+                <form id="csvForm" enctype="multipart/form-data" method="post" class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">ID</span>
+                        </div>
+                        <input name="driverId" id="driverId" required placeholder="Driver ID" pattern="[0-9]{2,7}"
+                               class="form-control"/>
+                    </div>
+                    <div class="input-group" title="Промежуток за который генерировали CSV отчет">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="">Date From and Date To</span>
+                        </div>
+                        <input name="dateFrom" id="dateFrom"  type="date" required
+                               pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
+                               class="form-control"/>
+                        <input name="dateTo" id="dateTo" type="date" required
+                               pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
+                               class="form-control"/>
+                    </div>
+                    <br>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">CSV File</span>
+                        </div>
+                        <input id="data" name="data" type="file" class="btn btn-outline-info" required
+                               accept="text/txt"><br>
+                    </div>
+                    <button class="btn btn-primary btn-lg btn-block">Generate report</button>
+                </form>
+                <form id="getCsvReportBtn" name="hhhgs" action="getCsvReport" method="GET">
+                    <button id="downloadReport" disabled="true" class="btn btn-outline-dark btn-lg btn-block"
+                            onclick="hideBtn()"
+                            type="submit" value="Download Report">Download Report
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 </body>

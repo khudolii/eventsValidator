@@ -1,5 +1,8 @@
 package logic.entities;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
 public class Driver {
     private long driverId;
     private String firstName;
@@ -9,8 +12,12 @@ public class Driver {
     private String licenseNumber;
     private String organizationName;
     private String usdotNumber;
+    private String multiDayBasisUsed;
+    private String homeTerminalTimezone;
+    private String homeTerminalTimezoneOffset;
 
-    public Driver(long driverId, String firstName, String lastName, String loginName, String licenseIssuingState, String licenseNumber, String organizationName, String usdotNumber) {
+    public Driver(long driverId, String firstName, String lastName, String loginName, String licenseIssuingState,
+                  String licenseNumber, String organizationName, String usdotNumber, String multiDayBasisUsed, String homeTerminalTimezone) {
         this.driverId = driverId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -19,6 +26,22 @@ public class Driver {
         this.licenseNumber = licenseNumber;
         this.organizationName = organizationName;
         this.usdotNumber = usdotNumber;
+        this.multiDayBasisUsed = multiDayBasisUsed;
+        this.homeTerminalTimezone = homeTerminalTimezone;
+        TimeZone offtime_zone = TimeZone.getTimeZone(homeTerminalTimezone);
+        this.homeTerminalTimezoneOffset ="0" +  Math.abs(offtime_zone.getOffset(Calendar.ZONE_OFFSET)/3600000);
+    }
+
+    public String getMultiDayBasisUsed() {
+        return multiDayBasisUsed;
+    }
+
+    public String getHomeTerminalTimezoneOffset() {
+        return homeTerminalTimezoneOffset;
+    }
+
+    public String getHomeTerminalTimezone() {
+        return homeTerminalTimezone;
     }
 
     public String getFirstName() {

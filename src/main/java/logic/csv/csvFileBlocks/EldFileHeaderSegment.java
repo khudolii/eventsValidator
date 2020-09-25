@@ -1,6 +1,10 @@
 package logic.csv.csvFileBlocks;
 
-public class EldFileHeaderSegment {
+import logic.entities.Event;
+
+import java.util.List;
+
+public class EldFileHeaderSegment extends EventCSV{
     private String driverFirstName;
     private String driverLastName;
     private String driverEldUserName;
@@ -15,6 +19,7 @@ public class EldFileHeaderSegment {
     private String carriersUSDOTNumber;
     private String carrierName;
     private String multiDayBasisUsed;
+    private String hour24PeriodStartingTime;
     private String timeZoneOffsetFromUtc;
     private String shippingDocumentNumber;
     private String exemptDriverConfiguration;
@@ -28,6 +33,10 @@ public class EldFileHeaderSegment {
     private String eldIdentifier;
     private String eldAuthenticated;
     private String outputFileComment;
+
+    public String getHour24PeriodStartingTime() {
+        return hour24PeriodStartingTime;
+    }
 
     public String getDriverFirstName() {
         return driverFirstName;
@@ -71,6 +80,11 @@ public class EldFileHeaderSegment {
 
     public String getTrailerNumber() {
         return trailerNumber;
+    }
+
+    @Override
+    public void compareEventsFromCsvAndDb(List<Event> eventsFromDb) {
+
     }
 
     public String getCarriersUSDOTNumber() {
@@ -186,6 +200,10 @@ public class EldFileHeaderSegment {
             return this;
         }
 
+        public Builder setHour24PeriodStartingTime(String hour24PeriodStartingTime) {
+            eldFileHeaderSegment.hour24PeriodStartingTime = hour24PeriodStartingTime;
+            return this;
+        }
         public Builder setDriverEldUserName(String driverEldUserName) {
             eldFileHeaderSegment.driverEldUserName = driverEldUserName;
             return this;

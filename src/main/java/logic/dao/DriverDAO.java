@@ -6,15 +6,20 @@ import logic.entities.Event;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 public class DriverDAO {
     private static final String GET_DRIVER_BY_ID = "select DP.driver_id, DP.first_name, DP.last_name, DP.login_name, DP.license_number, DP.license_state, O.organization_name, O.usdot_number" +
-            " from fleet.driver_profile DP" +
+            ", DP.eld_multiday_basis_used, DP.home_terminal_timezone from fleet.driver_profile DP" +
             " join public.organization O on DP.org_id=O.organization_id where driver_id=";
     private static final String GET_DRIVERS_BY_TRUCK_ID = "select DP.driver_id,DP.first_name, DP.last_name, DP.login_name, DP.license_number, DP.license_state, O.organization_name, O.usdot_number" +
-            " from fleet.driver_profile DP" +
+            ", DP.eld_multiday_basis_used, DP.home_terminal_timezone from fleet.driver_profile DP" +
             " join public.organization O on DP.org_id=O.organization_id join eld.eld_event E on DP.driver_id=E.driver_id_1 where DP.truck_id=";
 
     public static Driver getDriver(String driverId) throws SQLException {
@@ -32,7 +37,9 @@ public class DriverDAO {
                         resultSet.getString("license_state"),
                         resultSet.getString("license_number"),
                         resultSet.getString("organization_name"),
-                        resultSet.getString("usdot_number")
+                        resultSet.getString("usdot_number"),
+                        resultSet.getString("eld_multiday_basis_used"),
+                        resultSet.getString("home_terminal_timezone")
                 );
             }
         } catch (SQLException e) {
@@ -43,8 +50,8 @@ public class DriverDAO {
         return driver;
     }
 
-    public static List<Driver> getDriversByTruck (long truckId, String dateFrom, String dateTo) {
-        List <Driver> drivers = new ArrayList<>();
+    public static List<Driver> getDriversByTruck(long truckId, String dateFrom, String dateTo) {
+        List<Driver> drivers = new ArrayList<>();
         Statement st = null;
         try {
             st = DBConnection.getConnection().createStatement();
@@ -59,7 +66,9 @@ public class DriverDAO {
                         resultSet.getString("license_state"),
                         resultSet.getString("license_number"),
                         resultSet.getString("organization_name"),
-                        resultSet.getString("usdot_number")
+                        resultSet.getString("usdot_number"),
+                        resultSet.getString("eld_multiday_basis_used"),
+                        resultSet.getString("home_terminal_timezone")
                 ));
             }
         } catch (SQLException e) {

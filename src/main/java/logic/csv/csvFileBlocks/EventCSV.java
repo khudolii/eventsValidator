@@ -1,6 +1,8 @@
 package logic.csv.csvFileBlocks;
 
 import logic.ErrorsLog;
+import logic.csv.CsvReader;
+import logic.csv.CsvValidator;
 import logic.entities.Event;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -16,7 +18,7 @@ import static org.testng.Assert.assertNotEquals;
 
 public abstract class EventCSV {
     protected static final Logger log = Logger.getLogger(EventCSV.class);
-    protected static ArrayList<String> errorLogs = new ArrayList<String>();
+    public static ArrayList<String> errorLogs = new ArrayList<String>();
 
     protected String eventSequence;
     protected int recordOrigin;
@@ -25,6 +27,7 @@ public abstract class EventCSV {
     protected int eventCode;
     protected String eventDate;
     protected String eventTime;
+    protected Date eventTimeStamp;
     protected double totalVehicleMiles;
     protected double accumulatedVehicleMiles;
     protected double totalEngineHours;
@@ -46,7 +49,6 @@ public abstract class EventCSV {
     protected String commentTextOrAnnotation;
     protected String driverLocationDescription;
     protected String malfunctionOrDiagnosticCode;
-    public static String driverLoginNameFromDetailsPage;
 
     public String getEventSequence() {
         return eventSequence;
@@ -54,6 +56,24 @@ public abstract class EventCSV {
 
     public void setEventSequence(String eventSequence) {
         this.eventSequence = eventSequence;
+    }
+
+    public Date getEventTimeStamp() {
+        return eventTimeStamp;
+    }
+
+    public void setEventTimeStamp() {
+        DateFormat oldFormat = new SimpleDateFormat("MMddyy HHmmss", Locale.ENGLISH);
+        SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date oldTimestamp = null;
+        String newTimestamp = null;
+        try {
+            oldTimestamp = oldFormat.parse(eventDate + " " + eventTime);
+            newTimestamp = newFormat.format(oldTimestamp);
+            this.eventTimeStamp = newFormat.parse(newTimestamp);
+        } catch (ParseException e) {
+            System.out.println(e);
+        }
     }
 
     public int getRecordOrigin() {
@@ -332,16 +352,19 @@ public abstract class EventCSV {
         return false;
     }
 
-    protected boolean checkDoubleValue(double eventFromDb, double eventFromCsv, String nameOfField, String eventSequence) {
+    public boolean checkDoubleValue(double eventFromDb, double eventFromCsv, String nameOfField, String eventSequence) {
         log.info("* * * * " + "ELD Sequence= " + eventSequence + "-> " + nameOfField + ": DB= " + eventFromDb + " ; CSV= " + eventFromCsv);
-        if ((nameOfField.equals("getElapsedEngineHours") && eventFromCsv > 99.9)
-                || nameOfField.equals("getAccumulatedVehicleMiles") && eventFromCsv > 9999) {
+        if (nameOfField.equals("getElapsedEngineHours") && eventFromCsv >= 100) {
+            errorLogs.add("ELD Sequence= " + eventSequence + "-> " + nameOfField + ": DB= " + eventFromDb + " ; CSV= " + eventFromCsv);
+            return false;
+        }
+        if (nameOfField.equals("getAccumulatedVehicleMiles") && eventFromCsv >= 10000) {
             errorLogs.add("ELD Sequence= " + eventSequence + "-> " + nameOfField + ": DB= " + eventFromDb + " ; CSV= " + eventFromCsv);
             return false;
         }
         if (Math.abs(eventFromDb - eventFromCsv) <= 1)
             return true;
-        else
+        else if (eventFromCsv < 100)
             errorLogs.add("ELD Sequence= " + eventSequence + "-> " + nameOfField + ": DB= " + eventFromDb + " ; CSV= " + eventFromCsv);
         return false;
     }
@@ -360,8 +383,18 @@ public abstract class EventCSV {
         return false;
     }
 
+    protected boolean checkEventTimestamp(long eventFromDbTimeMillis, long eventFromCsvTimeMillis, String eventSequence) {
+        log.info("* * * * " + "ELD Sequence= " + eventSequence + "-> EventTimestamp : DB= " + buildEventTimestampByMilis(eventFromDbTimeMillis) + " ; CSV= " + buildEventTimestampByMilis(eventFromCsvTimeMillis));
+        if (eventFromCsvTimeMillis==eventFromDbTimeMillis || Math.abs(eventFromDbTimeMillis-eventFromCsvTimeMillis)>360000)
+            return true;
+        else {
+            errorLogs.add("ELD Sequence= " + eventSequence + "-> EventTimestamp : DB= " + buildEventTimestampByMilis(eventFromDbTimeMillis) + " ; CSV= " + buildEventTimestampByMilis(eventFromCsvTimeMillis));
+        }
+        return false;
+    }
 
-    protected boolean checkShippingTrailerNumbersValue(String eventFromDb, String eventFromCsv, String nameOfField, String eventSequence) {
+
+    public boolean checkShippingTrailerNumbersValue(String eventFromDb, String eventFromCsv, String nameOfField, String eventSequence) {
         log.info("* * * * " + "ELD Sequence= " + eventSequence + "-> " + nameOfField + ": DB= " + eventFromDb + " ; CSV= " + eventFromCsv);
         if (eventFromCsv.equals("") || eventFromCsv.equals(" ")) {
             if (eventFromDb == null || eventFromDb.equals("[]")
@@ -390,7 +423,7 @@ public abstract class EventCSV {
         return false;
     }
 
-    protected boolean checkCoordinatesValue(String eventFromDb, String eventFromCsv, String nameOfField, String eventSequence) {
+    public boolean checkCoordinatesValue(String eventFromDb, String eventFromCsv, String nameOfField, String eventSequence) {
         try {
             if (checkDoubleValue(Double.parseDouble(eventFromDb), Double.parseDouble(eventFromCsv), nameOfField, eventSequence)) {
                 log.info("* * * * " + "ELD Sequence= " + eventSequence + "-> " + nameOfField + ": DB= " + eventFromDb + " ; CSV= " + eventFromCsv);
@@ -406,16 +439,24 @@ public abstract class EventCSV {
         return false;
     }
 
-    protected static String buildEventTimestampByMilis(long milSec) {
+    protected String buildEventTimestampByMilis(long milSec) {
         Date date = new Date(milSec);
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
+        SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return newFormat.format(date);
+    }
+    protected Date setTimeZoneByDriverHomeTerminalTimeZone(Date timeStamp){
+        String driverHomeTimeZone = CsvValidator.currentDriver.getHomeTerminalTimezone();
+        System.out.println(driverHomeTimeZone);
+        TimeZone timeZone = TimeZone.getTimeZone(driverHomeTimeZone);
+        Calendar calendar = Calendar.getInstance(timeZone);
+        calendar.setTime(timeStamp);
+        System.out.println(timeStamp);
+        return timeStamp;
     }
 
     protected static String csvTimeFormatToTimestamp(String eventDate, String eventTime) {
-        String driverHomeTimeZone = "US/Central";
-        TimeZone timeZone = TimeZone.getTimeZone(driverHomeTimeZone);
+
         DateFormat oldFormat = new SimpleDateFormat("MMddyy HHmmss", Locale.ENGLISH);
-        oldFormat.setTimeZone(timeZone);
         SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date oldTimestamp = null;
         String newTimestamp = null;

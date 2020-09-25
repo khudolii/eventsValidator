@@ -32,13 +32,21 @@ public class Event {
     private String latitude;
     private String longitude;
     private String comment;
+    private double distanceSinceLastValidCoords;
+    private int malfunctionIndicatorStatus;
+    private int dataDiagnosticEventIndicatorStatus;
+    private String malfunctionDiagnosticCode;
 
     public EventType getEventName() {
         return eventName;
     }
 
+    public String getMalfunctionDiagnosticCode() {
+        return malfunctionDiagnosticCode;
+    }
+
     public void setEventName() {
-        this.eventName = defineEventType(eventType,eventCode);
+        this.eventName = defineEventType(eventType, eventCode);
     }
 
     public long getEventSequence() {
@@ -95,6 +103,18 @@ public class Event {
 
     public int getRecordOrigin() {
         return recordOrigin;
+    }
+
+    public double getDistanceSinceLastValidCoords() {
+        return distanceSinceLastValidCoords;
+    }
+
+    public int getMalfunctionIndicatorStatus() {
+        return malfunctionIndicatorStatus;
+    }
+
+    public int getDataDiagnosticEventIndicatorStatus() {
+        return dataDiagnosticEventIndicatorStatus;
     }
 
     public int getRecordStatus() {
@@ -201,11 +221,14 @@ public class Event {
         }
         return EventType.CERTIFICATION;
     }
-    public static class Builder{
+
+    public static class Builder {
         private Event event;
-        public Builder(){
-            this.event=new Event();
+
+        public Builder() {
+            this.event = new Event();
         }
+
         public Builder setEventSequence(long eventSequence) {
             event.eventSequence = eventSequence;
             return this;
@@ -238,7 +261,7 @@ public class Event {
 
         public Builder setEventTimestamp(String eventTimestamp) {
             try {
-                event.eventTimestamp =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(eventTimestamp);
+                event.eventTimestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(eventTimestamp);
             } catch (ParseException e) {
                 System.out.println(e);
             }
@@ -295,6 +318,11 @@ public class Event {
             return this;
         }
 
+        public Builder setMalfunctionDiagnosticCode(String malfunctionDiagnosticCode) {
+            event.malfunctionDiagnosticCode = malfunctionDiagnosticCode;
+            return this;
+        }
+
         public Builder setTotalVehicleMiles(double totalVehicleMiles) {
             event.totalVehicleMiles = totalVehicleMiles;
             return this;
@@ -315,6 +343,21 @@ public class Event {
             return this;
         }
 
+        public Builder setDistanceSinceLastValidCoords(double distanceSinceLastValidCoords) {
+            event.distanceSinceLastValidCoords = distanceSinceLastValidCoords;
+            return this;
+        }
+
+        public Builder setMalfunctionIndicatorStatus(int malfunctionIndicatorStatus) {
+            event.malfunctionIndicatorStatus = malfunctionIndicatorStatus;
+            return this;
+        }
+
+        public Builder setDataDiagnosticEventIndicatorStatus(int dataDiagnosticEventIndicatorStatus) {
+            event.dataDiagnosticEventIndicatorStatus = dataDiagnosticEventIndicatorStatus;
+            return this;
+        }
+
         public Builder setLatitude(String latitude) {
             event.latitude = latitude;
             return this;
@@ -326,10 +369,12 @@ public class Event {
         }
 
         public Builder setComment(String comment) {
+            if (comment==null) comment = "";
             event.comment = comment;
             return this;
         }
-        public Event build(){
+
+        public Event build() {
             return event;
         }
     }
@@ -338,15 +383,15 @@ public class Event {
     public String toString() {
         return
                 eventName +
-                ", TIME=" + eventTimestamp +
-                ", RO=" + recordOrigin +
-                ", RS=" + recordStatus +
-                ", TVM=" + totalVehicleMiles +
-                ", AVM=" + accumulatedVehicleMiles +
-                ", TEH=" + totalEngineHours +
-                ", EEH=" + elapsedEngineHours +
-                ", LAT='" + latitude + '\'' +
-                ", LONG='" + longitude + '\'';
+                        ", TIME=" + eventTimestamp +
+                        ", RO=" + recordOrigin +
+                        ", RS=" + recordStatus +
+                        ", TVM=" + totalVehicleMiles +
+                        ", AVM=" + accumulatedVehicleMiles +
+                        ", TEH=" + totalEngineHours +
+                        ", EEH=" + elapsedEngineHours +
+                        ", LAT='" + latitude + '\'' +
+                        ", LONG='" + longitude + '\'';
     }
 
 }

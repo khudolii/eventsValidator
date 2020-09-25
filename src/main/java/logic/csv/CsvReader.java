@@ -118,6 +118,7 @@ public class CsvReader {
                             .setCarriersUSDOTNumber(csvFileRowsList.get(i + 3)[0])
                             .setCarrierName(csvFileRowsList.get(i + 3)[1])
                             .setMultiDayBasisUsed(csvFileRowsList.get(i + 3)[2])
+                            .setHour24PeriodStartingTime(csvFileRowsList.get(i + 3)[3])
                             .setTimeZoneOffsetFromUtc(csvFileRowsList.get(i + 3)[4])
                             .setShippingDocumentNumber(csvFileRowsList.get(i + 4)[0])
                             .setExemptDriverConfiguration(csvFileRowsList.get(i + 4)[1])

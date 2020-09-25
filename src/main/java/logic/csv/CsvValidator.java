@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class CsvValidator {
 
-    private Driver currentDriver;
+    public static Driver currentDriver;
     private List<Event> events;
     private List<Driver> userList;
     private Set<Truck> trucks;
@@ -91,6 +91,19 @@ public class CsvValidator {
                 + ", Expected = OLN4", eldFileHeaderSegment.getEldRegistrationId().equals("OLN4"));
         ErrorsLog.writeCsvTestResultToReport("ELD Identifier: Actual = " + eldFileHeaderSegment.getEldIdentifier()
                 + ", Expected = TE0101", eldFileHeaderSegment.getEldIdentifier().equals("TE0101"));
+        ErrorsLog.writeCsvTestResultToReport("Multiday-basis Used: Actual = " + csvReader.getEldFileHeaderSegment().getMultiDayBasisUsed()
+                + ", Expected = " + currentDriver.getMultiDayBasisUsed(), csvReader.getEldFileHeaderSegment().getMultiDayBasisUsed().equals(currentDriver.getMultiDayBasisUsed()));
+        ErrorsLog.writeCsvTestResultToReport("24-Hour Period Starting Time: Actual = " + csvReader.getEldFileHeaderSegment().getHour24PeriodStartingTime() +
+                ", Cannot be empty!", csvReader.getEldFileHeaderSegment().getHour24PeriodStartingTime() != null && !csvReader.getEldFileHeaderSegment().getHour24PeriodStartingTime().equals(""));
+        ErrorsLog.writeCsvTestResultToReport("Time Zone Offset From UTC: Actual = " + csvReader.getEldFileHeaderSegment().getTimeZoneOffsetFromUtc() +
+                ", Expected = " + currentDriver.getHomeTerminalTimezoneOffset(), csvReader.getEldFileHeaderSegment().getTimeZoneOffsetFromUtc().equals(currentDriver.getHomeTerminalTimezoneOffset()));
+        ErrorsLog.writeCsvTestResultToReport("ELD Authentication: Actual = " + csvReader.getEldFileHeaderSegment().getEldAuthenticated() +
+                ", Cannot be empty!", csvReader.getEldFileHeaderSegment().getEldAuthenticated() != null && !csvReader.getEldFileHeaderSegment().getEldAuthenticated().equals(""));
+
+        ErrorsLog.writeCsvTestResultToReport("Size of User List: Actual = " + csvReader.getUserList().size() + ", Expected = " + userList.size(),
+                csvReader.getUserList().size() == userList.size());
+        ErrorsLog.writeCsvTestResultToReport("Size of CMV List: Actual = " + csvReader.getCmvList().size() + ", Expected = " + trucks.size(),
+                csvReader.getCmvList().size() == trucks.size());
 
         /* Find the latest co-driver by comparing the User List data and the data in the Co-Driver field. */
         if (userList.size() > 1) {
@@ -111,7 +124,7 @@ public class CsvValidator {
                         + ", " + eldFileHeaderSegment.getCoDriverEldUserName() + ", Not found this co driver in DB.", false);
         } else {
             ErrorsLog.writeCsvTestResultToReport("Co Driver Info: Actual = " + eldFileHeaderSegment.getCoDriverLastName() + ", " + eldFileHeaderSegment.getCoDriverFirstName()
-                            + ", " + eldFileHeaderSegment.getCoDriverEldUserName() + ", Expected ', , ,'"
+                            + ", " + eldFileHeaderSegment.getCoDriverEldUserName() + ", Expected = , , ,"
                     , eldFileHeaderSegment.getCoDriverLastName().equals("")
                             && eldFileHeaderSegment.getCoDriverFirstName().equals("")
                             && eldFileHeaderSegment.getCoDriverEldUserName().equals(""));
@@ -130,6 +143,36 @@ public class CsvValidator {
         else
             ErrorsLog.writeCsvTestResultToReport("Current Truck: Actual = " + eldFileHeaderSegment.getCmvPowerUnitNumber() + ", "
                     + eldFileHeaderSegment.getCmvVinNumber() + ", Expected = Not found this truck in driver events from DB", false);
+
+        //Event lastDutyEvent = events.stream().filter(event -> event.getEventType() == 1).findFirst().orElse(null);
+        Event lastDutyEvent = null; //TODO СДЕЛАТЬ ПОИСК ПОСЛЕДНЕГО ИВЕНТА
+        if (lastDutyEvent != null) {
+            ErrorsLog.writeCsvTestResultToReport("Trailer Number(s): Actual = " + eldFileHeaderSegment.getTrailerNumber()
+                    + ", Expected = " + lastDutyEvent.getTrailerNumber(), eldFileHeaderSegment
+                    .checkShippingTrailerNumbersValue(lastDutyEvent.getTrailerNumber(), eldFileHeaderSegment.getTrailerNumber(),
+                            "Trailer Number(s)", lastDutyEvent.getEldSequence()));
+            ErrorsLog.writeCsvTestResultToReport("Shipping Document Number: Actual = " + eldFileHeaderSegment.getShippingDocumentNumber()
+                    + ", Expected = " + lastDutyEvent.getShippingNumber(), eldFileHeaderSegment
+                    .checkShippingTrailerNumbersValue(lastDutyEvent.getShippingNumber(), eldFileHeaderSegment.getShippingDocumentNumber(),
+                            "Shipping Document Number", lastDutyEvent.getEldSequence()));
+            ErrorsLog.writeCsvTestResultToReport("Current Laitude: Actual = " + eldFileHeaderSegment.getCurrentLatitude()
+                    + ", Expected = " + lastDutyEvent.getLatitude(), eldFileHeaderSegment
+                    .checkCoordinatesValue(lastDutyEvent.getLatitude(), eldFileHeaderSegment.getCurrentLatitude(),
+                            "Current Latitude", lastDutyEvent.getEldSequence()));
+            ErrorsLog.writeCsvTestResultToReport("Current Longitude: Actual = " + eldFileHeaderSegment.getCurrentLongitude()
+                    + ", Expected = " + lastDutyEvent.getLongitude(), eldFileHeaderSegment
+                    .checkCoordinatesValue(lastDutyEvent.getLongitude(), eldFileHeaderSegment.getCurrentLongitude(),
+                            "Current Longitude", lastDutyEvent.getEldSequence()));
+            ErrorsLog.writeCsvTestResultToReport("Current TVM: Actual = " + eldFileHeaderSegment.getTotalVehicleMiles()
+                    + ", Expected = " + lastDutyEvent.getTotalVehicleMiles(), eldFileHeaderSegment
+                    .checkDoubleValue(lastDutyEvent.getTotalVehicleMiles(), eldFileHeaderSegment.getTotalVehicleMiles(),
+                            "Current TVM", lastDutyEvent.getEldSequence()));
+            ErrorsLog.writeCsvTestResultToReport("Current TEH: Actual = " + eldFileHeaderSegment.getTotalEngineHours()
+                    + ", Expected = " + lastDutyEvent.getTotalEngineHours(), eldFileHeaderSegment
+                    .checkDoubleValue(lastDutyEvent.getTotalEngineHours(), eldFileHeaderSegment.getTotalEngineHours(),
+                            "Current TEH", lastDutyEvent.getEldSequence()));
+            EldFileHeaderSegment.errorLogs.clear();
+        }
     }
 
     private List<Driver> findCoDrivers(Set<Truck> trucks) {
@@ -208,14 +251,5 @@ public class CsvValidator {
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.UNIDENTIFIED_DRIVER_PROFILE_RECORDS);
         csvReader.getUnidentifiedEvents().forEach(eldEvents -> eldEvents.compareEventsFromCsvAndDb(events));
 
-    }
-
-    public static void main(String[] args) throws Exception {
-        ValidatorAttributes.setDateTo("2020-08-07");
-        ValidatorAttributes.setDateFrom("2020-08-01");
-        ErrorsLog.createReportFile("34131", 40);
-        // CsvAnalyzer csvAnalyzer = new CsvAnalyzer();
-        //csvAnalyzer.toAnalyzeCsvFile();
-        ErrorsLog.writeResultsToFile();
     }
 }

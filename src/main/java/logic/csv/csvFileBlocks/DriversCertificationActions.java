@@ -24,13 +24,17 @@ public class DriversCertificationActions  extends EventCSV {
     @Override
     public void compareEventsFromCsvAndDb(List<Event> eventsFromDb) {
         Optional<Event> foundEvent = findEventFromCsvInDb(eventsFromDb);
+        setEventTimeStamp();
+
         try{
             log.info("*** CHECK: Compare event form CSV and DB: ELD Sequence = " + foundEvent.get().getEldSequence());
             checkIntValue(foundEvent.get().getEventCode(), getEventCode(), "getEventCode",foundEvent.get().getEldSequence());
-            checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()) , csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp",foundEvent.get().getEldSequence());
+//            checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()) , csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp",foundEvent.get().getEldSequence());
+            checkEventTimestamp(setTimeZoneByDriverHomeTerminalTimeZone(foundEvent.get().getEventTimestamp()).getTime(), getEventTimeStamp().getTime(), foundEvent.get().getEldSequence());
+
         } catch (NoSuchElementException e){
             log.error("* * * * No Such Event!");
-            errorLogs.add("ELD Sequence= " + eventSequence + "-> No Such Event!");
+            errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> No Such Event!");
         }
         finally {
             if(errorLogs.size()>0){
