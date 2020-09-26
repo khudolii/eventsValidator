@@ -216,11 +216,59 @@ public class CsvValidator {
                     "User from events not found! ", false);
     }
 
+    private ArrayList<Integer> getELDSeqEventsFromCSV() {
+        ArrayList<Integer> eldSeqOfEventsFromDb = new ArrayList<>();
+        csvReader.getEldEventsList()
+                .stream()
+                .mapToInt(x -> Integer.parseInt(x.getEventSequence(), 16))
+                .boxed()
+                .forEach(eldSeqOfEventsFromDb::add);
+        csvReader.getEldLoginAndLogoutEvents()
+                .stream()
+                .mapToInt(x -> Integer.parseInt(x.getEventSequence(), 16))
+                .boxed()
+                .forEach(eldSeqOfEventsFromDb::add);
+        csvReader.getCmvEnginePowerUpAndShutDownEvents()
+                .stream()
+                .mapToInt(x -> Integer.parseInt(x.getEventSequence(), 16))
+                .boxed()
+                .forEach(eldSeqOfEventsFromDb::add);
+        csvReader.getMalfunctionsAndDataDiagnosticEvents()
+                .stream()
+                .mapToInt(x -> Integer.parseInt(x.getEventSequence(), 16))
+                .boxed()
+                .forEach(eldSeqOfEventsFromDb::add);
+        csvReader.getDriversCertificationActions()
+                .stream()
+                .mapToInt(x -> Integer.parseInt(x.getEventSequence(), 16))
+                .boxed()
+                .forEach(eldSeqOfEventsFromDb::add);
+        return eldSeqOfEventsFromDb;
+    }
+
+    private void checkTheUniquenessELDSequence(ArrayList<Integer> eldSequenceList) {
+        ErrorsLog.createNewSubAnchor("Checking the uniqueness of the ELD Sequence:");
+        Set<Integer> repeatSeq = eldSequenceList.stream().filter(i -> Collections.frequency(eldSequenceList, i) > 1).collect(Collectors.toSet());
+        if (repeatSeq.size() > 0) {
+            ErrorsLog.writeCsvTestResultToReport("Found " + repeatSeq.size() + " repetitions of ELD Sequence", false);
+            ArrayList<String> repetitionEvents = new ArrayList<>();
+            repeatSeq
+                    .forEach(seq -> events
+                            .stream()
+                            .filter(e -> Integer.parseInt(e.getEldSequence())  == seq)
+                            .map(event -> "ELD Sequence = " + event.getEldSequence() +
+                                    ", Event = " + event.getEventName() + ", Time = " + event.getEventTimestamp()
+                                    + " RS = " + event.getRecordStatus() + ", RO = " + event.getRecordOrigin())
+                            .forEach(repetitionEvents::add));
+            ErrorsLog.writeNumberedErrorsList(repetitionEvents);
+        } else
+            ErrorsLog.writeCsvTestResultToReport("Repetitions of ELD Sequence not found", true);
+    }
+
     public void toAnalyzeCsvFile() throws Exception {
         ErrorsLog.createNewAnchor("CSV Structure");
         checkAllRequireHeaders(csvReader.getCsvFileRowsList());
         csvReader.parseEldEvents();
-
         if (csvReader.getEldFileHeaderSegment() != null && currentDriver != null)
             checkEldFileHeaderSegmentAttribute(csvReader.getEldFileHeaderSegment());
 
@@ -230,26 +278,56 @@ public class CsvValidator {
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.CMV_LIST);
         csvReader.getCmvList().forEach(this::checkCmvList);
 
+        checkTheUniquenessELDSequence(getELDSeqEventsFromCSV());
+
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.ELD_EVENT_LIST);
+        ErrorsLog.writeCsvTestResultToReport("Checked " + csvReader.getEldEventsList().size() + " events.", true);
         csvReader.getEldEventsList().forEach(eldEvents -> eldEvents.compareEventsFromCsvAndDb(events));
 
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.ELD_EVENT_ANNOTATIONS_OR_COMMENTS);
+        ErrorsLog.writeCsvTestResultToReport("Checked " + csvReader.getEldEventAnnotationOrComments().size() + " events.", true);
         csvReader.getEldEventAnnotationOrComments().forEach(eldEvents -> eldEvents.compareEventsFromCsvAndDb(events));
 
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.CMV_ENGINE_POWER_UP_AND_SHUT_DOWN_ACTIVITY);
+        ErrorsLog.writeCsvTestResultToReport("Checked " + csvReader.getCmvEnginePowerUpAndShutDownEvents().size() + " events.", true);
         csvReader.getCmvEnginePowerUpAndShutDownEvents().forEach(eldEvents -> eldEvents.compareEventsFromCsvAndDb(events));
 
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.DRIVERS_CERTIFICATION_ACTIONS);
+        ErrorsLog.writeCsvTestResultToReport("Checked " + csvReader.getDriversCertificationActions().size() + " events.", true);
         csvReader.getDriversCertificationActions().forEach(eldEvents -> eldEvents.compareEventsFromCsvAndDb(events));
 
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.ELD_LOGIN_LOGOUT_REPORT);
+        ErrorsLog.writeCsvTestResultToReport("Checked " + csvReader.getEldLoginAndLogoutEvents().size() + " events.", true);
         csvReader.getEldLoginAndLogoutEvents().forEach(eldEvents -> eldEvents.compareEventsFromCsvAndDb(events));
 
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.MALFUNCTIONS_AND_DATA_DIAGNOSTIC_EVENTS);
+        ErrorsLog.writeCsvTestResultToReport("Checked " + csvReader.getMalfunctionsAndDataDiagnosticEvents().size() + " events.", true);
         csvReader.getMalfunctionsAndDataDiagnosticEvents().forEach(eldEvents -> eldEvents.compareEventsFromCsvAndDb(events));
 
+        /*Search for Unidentified events by truck numbers and compare them with the Unidentified field in the CSV report.*/
         ErrorsLog.createNewSubAnchor(HeadersCsvReport.UNIDENTIFIED_DRIVER_PROFILE_RECORDS);
-        csvReader.getUnidentifiedEvents().forEach(eldEvents -> eldEvents.compareEventsFromCsvAndDb(events));
+        ErrorsLog.writeCsvTestResultToReport("Checked " + csvReader.getUnidentifiedEvents().size() + " events.", true);
+        List<Event> unidentifiedEvents = new ArrayList<>();
+        trucks
+                .stream()
+                .map(truck -> EventDAO.getUnidentifiedEventsByTruckId(truck.getTruckId()))
+                .forEach(unidentifiedEvents::addAll);
+        if (unidentifiedEvents.size() != 0)
+            csvReader.getUnidentifiedEvents().forEach(eldEvents -> eldEvents.compareEventsFromCsvAndDb(unidentifiedEvents));
+        else if (csvReader.getUnidentifiedEvents().size() != 0)
+            ErrorsLog.writeCsvTestResultToReport("List size of UE from DB = " + unidentifiedEvents.size() + ", but list size from CSV = "
+                    + csvReader.getUnidentifiedEvents().size(), false);
 
+        /*Search for events that are in the database, but not in the CSV report.*/
+        int numOfEventsFromCsv = csvReader.getEldEventsList().size() + csvReader.getCmvEnginePowerUpAndShutDownEvents().size() + csvReader.getMalfunctionsAndDataDiagnosticEvents().size()
+                + csvReader.getEldLoginAndLogoutEvents().size() + csvReader.getDriversCertificationActions().size();
+        ErrorsLog.createNewSubAnchor("Events from DB that were not included in the report:");
+        ErrorsLog.writeCsvTestResultToReport("Num of events from DB = " + events.size() + ", num of events from CSV = "
+                + numOfEventsFromCsv, true);
+        getELDSeqEventsFromCSV().forEach(eldSeq -> events.removeIf(event -> eldSeq == Integer.parseInt(event.getEldSequence())));
+        ErrorsLog.writeNumberedErrorsList(new ArrayList<>(events.stream()
+                .map(event -> "ELD Sequence = " + event.getEldSequence() + ", Event = " + event.getEventName() + ", Time = " + event.getEventTimestamp()
+                        + " RS = " + event.getRecordStatus() + ", RO = " + event.getRecordOrigin())
+                .collect(Collectors.toList())));
     }
 }

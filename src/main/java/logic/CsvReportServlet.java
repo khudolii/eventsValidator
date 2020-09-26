@@ -42,7 +42,7 @@ public class CsvReportServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        new EventsValidator(csvValidator.getEvents()).toAnalyzeEvent();
+        //new EventsValidator(csvValidator.getEvents()).toAnalyzeEvent();
         ErrorsLog.writeResultsToFile();
         byteArrayOutputStream = ErrorsLog.getBout();
     }

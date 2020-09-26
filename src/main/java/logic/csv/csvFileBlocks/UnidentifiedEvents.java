@@ -11,30 +11,35 @@ public class UnidentifiedEvents extends EventCSV {
 
     @Override
     public void compareEventsFromCsvAndDb(List<Event> eventsFromDb) {
-        Optional<Event> foundEvent = findEventFromCsvInDb(eventsFromDb);
-        try {
-            log.info("*** CHECK: Compare event form CSV and DB: ELD Sequence = " + foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getRecordStatus(), getRecordStatus(), "getRecordStatus", foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getRecordOrigin(), getRecordOrigin(), "getRecordOrigin", foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getEventType(), getEventType(), "getEventType", foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getEventCode(), getEventCode(), "getEventCode", foundEvent.get().getEldSequence());
-            checkDoubleValue(foundEvent.get().getAccumulatedVehicleMiles(), getAccumulatedVehicleMiles(), "getAccumulatedVehicleMiles", foundEvent.get().getEldSequence());
-            checkDoubleValue(foundEvent.get().getElapsedEngineHours(), getElapsedEngineHours(), "getElapsedEngineHours", foundEvent.get().getEldSequence());
-            checkCoordinatesValue(foundEvent.get().getLongitude(), getLongitude(), "getLongitude", foundEvent.get().getEldSequence());
-            checkCoordinatesValue(foundEvent.get().getLatitude(), getLatitude(), "getLatitude", foundEvent.get().getEldSequence());
-            checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()), csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp", foundEvent.get().getEldSequence());
-            checkDoubleValue(foundEvent.get().getDistanceSinceLastValidCoords(), getDistanceLastValidCoordinates(), "getDistanceLastValidCoordinates",foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getMalfunctionIndicatorStatus(), getMalfunctionIndicatorStatus(), "getMalfunctionIndicatorStatus",foundEvent.get().getEldSequence());
-        } catch (NoSuchElementException e) {
-            log.error("* * * * No Such Event!");
-            errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> No Such Event!");
-        } finally {
-            if (errorLogs.size() > 0) {
-                ErrorsLog.createNewSubAnchor("ELD Sequence = " + eventSequence);
-                errorLogs.forEach(message -> ErrorsLog.writeCsvTestResultToReport(message, false));
-                errorLogs.clear();
+        if (recordStatus == 2) {
+            if (getRecordOrigin() == 1 || getEventType() > 3)
+                errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> This is incorrect RS = 2 event. RO = " + getRecordOrigin() + ", ET = " + getEventType());
+        } else {
+                Optional<Event> foundEvent = findEventFromCsvInDb(eventsFromDb);
+                try {
+                    log.info("*** CHECK: Compare event form CSV and DB: ELD Sequence = " + foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getRecordStatus(), getRecordStatus(), "getRecordStatus", foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getRecordOrigin(), getRecordOrigin(), "getRecordOrigin", foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getEventType(), getEventType(), "getEventType", foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getEventCode(), getEventCode(), "getEventCode", foundEvent.get().getEldSequence());
+                    checkDoubleValue(foundEvent.get().getAccumulatedVehicleMiles(), getAccumulatedVehicleMiles(), "getAccumulatedVehicleMiles", foundEvent.get().getEldSequence());
+                    checkDoubleValue(foundEvent.get().getElapsedEngineHours(), getElapsedEngineHours(), "getElapsedEngineHours", foundEvent.get().getEldSequence());
+                    checkCoordinatesValue(foundEvent.get().getLongitude(), getLongitude(), "getLongitude", foundEvent.get().getEldSequence());
+                    checkCoordinatesValue(foundEvent.get().getLatitude(), getLatitude(), "getLatitude", foundEvent.get().getEldSequence());
+                    checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()), csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp", foundEvent.get().getEldSequence());
+                    checkDoubleValue(foundEvent.get().getDistanceSinceLastValidCoords(), getDistanceLastValidCoordinates(), "getDistanceLastValidCoordinates", foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getMalfunctionIndicatorStatus(), getMalfunctionIndicatorStatus(), "getMalfunctionIndicatorStatus", foundEvent.get().getEldSequence());
+                } catch (NoSuchElementException e) {
+                    log.error("* * * * No Such Event!");
+                    errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> No Such Event!");
+                } finally {
+                    if (errorLogs.size() > 0) {
+                        ErrorsLog.createNewSubAnchorNotBold("ELD Sequence = " + eventSequence);
+                        errorLogs.forEach(message -> ErrorsLog.writeCsvTestResultToReport(message, false));
+                        errorLogs.clear();
+                    }
+                }
             }
-        }
     }
 
     public static class Builder {
@@ -130,6 +135,7 @@ public class UnidentifiedEvents extends EventCSV {
         }
 
         public UnidentifiedEvents build() {
+            newUnidentifiedEvents.setEventTimeStamp();
             return newUnidentifiedEvents;
         }
     }

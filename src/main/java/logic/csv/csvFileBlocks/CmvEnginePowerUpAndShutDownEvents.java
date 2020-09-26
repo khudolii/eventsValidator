@@ -8,7 +8,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class CmvEnginePowerUpAndShutDownEvents  extends EventCSV {
-
     @Override
     public String toString() {
         return "CmvEnginePowerUpAndShutDownEvents{" +
@@ -53,7 +52,7 @@ public class CmvEnginePowerUpAndShutDownEvents  extends EventCSV {
         }
         finally {
             if(errorLogs.size()>0){
-                ErrorsLog.createNewSubAnchor("ELD Sequence = " + eventSequence);
+                ErrorsLog.createNewSubAnchorNotBold("ELD Sequence = " + eventSequence);
                 errorLogs.forEach(message -> ErrorsLog.writeCsvTestResultToReport(message,false));
                 errorLogs.clear();
             }

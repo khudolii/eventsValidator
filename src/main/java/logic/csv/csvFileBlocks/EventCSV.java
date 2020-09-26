@@ -440,8 +440,11 @@ public abstract class EventCSV {
     }
 
     protected String buildEventTimestampByMilis(long milSec) {
+        String driverHomeTimeZone = CsvValidator.currentDriver.getHomeTerminalTimezone();
+        TimeZone timeZone = TimeZone.getTimeZone(driverHomeTimeZone);
         Date date = new Date(milSec);
         SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        newFormat.setTimeZone(timeZone);
         return newFormat.format(date);
     }
     protected Date setTimeZoneByDriverHomeTerminalTimeZone(Date timeStamp){

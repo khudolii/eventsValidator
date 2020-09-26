@@ -11,36 +11,35 @@ import java.util.Optional;
 public class EldEvents extends EventCSV {
     @Override
     public void compareEventsFromCsvAndDb(List<Event> eventsFromDb) {
-        Optional<Event> foundEvent = null;
-        setEventTimeStamp();
+        Optional<Event> foundEvent = findEventFromCsvInDb(eventsFromDb);
         try {
-            foundEvent = findEventFromCsvInDb(eventsFromDb);
-            log.info("*** CHECK: Compare event form CSV and DB: ELD Sequence = " + foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getRecordStatus(), getRecordStatus(), "getRecordStatus",foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getRecordOrigin(), getRecordOrigin(), "getRecordOrigin",foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getEventType(), getEventType(), "getEventType",foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getEventCode(), getEventCode(), "getEventCode",foundEvent.get().getEldSequence());
-            checkDoubleValue(foundEvent.get().getAccumulatedVehicleMiles(), getAccumulatedVehicleMiles(), "getAccumulatedVehicleMiles",foundEvent.get().getEldSequence());
-            checkDoubleValue(foundEvent.get().getElapsedEngineHours(), getElapsedEngineHours(), "getElapsedEngineHours",foundEvent.get().getEldSequence());
-            checkCoordinatesValue(foundEvent.get().getLongitude(), getLongitude(), "getLongitude",foundEvent.get().getEldSequence());
-            checkCoordinatesValue(foundEvent.get().getLatitude(), getLatitude(), "getLatitude",foundEvent.get().getEldSequence());
-            //checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()) , csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp",foundEvent.get().getEldSequence());
-            System.out.println(setTimeZoneByDriverHomeTerminalTimeZone(foundEvent.get().getEventTimestamp()));
-            System.out.println(getEventTimeStamp());
-            checkEventTimestamp(setTimeZoneByDriverHomeTerminalTimeZone(foundEvent.get().getEventTimestamp()).getTime(), getEventTimeStamp().getTime(), foundEvent.get().getEldSequence());
+            if (recordStatus == 2) {
+                if (getRecordOrigin() == 1 || getEventType() > 3) {
+                    errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> This is incorrect RS = 2 event. RO = " + getRecordOrigin() + ", ET = " + getEventType());
+                } else {
+                    log.info("*** CHECK: Compare event form CSV and DB: ELD Sequence = " + foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getRecordStatus(), getRecordStatus(), "getRecordStatus", foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getRecordOrigin(), getRecordOrigin(), "getRecordOrigin", foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getEventType(), getEventType(), "getEventType", foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getEventCode(), getEventCode(), "getEventCode", foundEvent.get().getEldSequence());
+                    checkDoubleValue(foundEvent.get().getAccumulatedVehicleMiles(), getAccumulatedVehicleMiles(), "getAccumulatedVehicleMiles", foundEvent.get().getEldSequence());
+                    checkDoubleValue(foundEvent.get().getElapsedEngineHours(), getElapsedEngineHours(), "getElapsedEngineHours", foundEvent.get().getEldSequence());
+                    checkCoordinatesValue(foundEvent.get().getLongitude(), getLongitude(), "getLongitude", foundEvent.get().getEldSequence());
+                    checkCoordinatesValue(foundEvent.get().getLatitude(), getLatitude(), "getLatitude", foundEvent.get().getEldSequence());
+                    checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()), csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp", foundEvent.get().getEldSequence());
+                    checkDoubleValue(foundEvent.get().getDistanceSinceLastValidCoords(), getDistanceLastValidCoordinates(), "getDistanceLastValidCoordinates", foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getMalfunctionIndicatorStatus(), getMalfunctionIndicatorStatus(), "getMalfunctionIndicatorStatus", foundEvent.get().getEldSequence());
+                    checkIntValue(foundEvent.get().getDataDiagnosticEventIndicatorStatus(), getDataDiagnosticEventIndicatorStatus(), "getDataDiagnosticEventIndicatorStatus", foundEvent.get().getEldSequence());
 
-            checkDoubleValue(foundEvent.get().getDistanceSinceLastValidCoords(), getDistanceLastValidCoordinates(), "getDistanceLastValidCoordinates",foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getMalfunctionIndicatorStatus(), getMalfunctionIndicatorStatus(), "getMalfunctionIndicatorStatus",foundEvent.get().getEldSequence());
-            checkIntValue(foundEvent.get().getDataDiagnosticEventIndicatorStatus(), getDataDiagnosticEventIndicatorStatus(), "getDataDiagnosticEventIndicatorStatus",foundEvent.get().getEldSequence());
-
-        } catch (NoSuchElementException e){
+                }
+            }
+        } catch (NoSuchElementException e) {
             log.error("* * * * No Such Event!");
             errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> No Such Event!");
-        }
-        finally {
-            if(errorLogs.size()>0){
-                ErrorsLog.createNewSubAnchor("ELD Sequence = " + eventSequence);
-                errorLogs.forEach(message -> ErrorsLog.writeCsvTestResultToReport(message,false));
+        } finally {
+            if (errorLogs.size() > 0) {
+                ErrorsLog.createNewSubAnchorNotBold("ELD Sequence = " + eventSequence);
+                errorLogs.forEach(message -> ErrorsLog.writeCsvTestResultToReport(message, false));
                 errorLogs.clear();
             }
         }
@@ -76,78 +75,98 @@ public class EldEvents extends EventCSV {
 
     public static class Builder {
         private EldEvents newEldEldEvents;
-        public Builder(){
+
+        public Builder() {
             newEldEldEvents = new EldEvents();
         }
-        public Builder setEventSequence(String eventSequence){
-            newEldEldEvents.eventSequence =eventSequence;
+
+        public Builder setEventSequence(String eventSequence) {
+            newEldEldEvents.eventSequence = eventSequence;
             return this;
         }
-        public Builder setRecordOrigin(int recordOrigin){
-            newEldEldEvents.recordOrigin= recordOrigin;
+
+        public Builder setRecordOrigin(int recordOrigin) {
+            newEldEldEvents.recordOrigin = recordOrigin;
             return this;
         }
-        public Builder setRecordStatus(int recordStatus){
-            newEldEldEvents.recordStatus=recordStatus;
+
+        public Builder setRecordStatus(int recordStatus) {
+            newEldEldEvents.recordStatus = recordStatus;
             return this;
         }
-        public Builder setEventType(int eventType){
-            newEldEldEvents.eventType=eventType;
+
+        public Builder setEventType(int eventType) {
+            newEldEldEvents.eventType = eventType;
             return this;
         }
-        public Builder setEventCode(int eventCode){
-            newEldEldEvents.eventCode=eventCode;
+
+        public Builder setEventCode(int eventCode) {
+            newEldEldEvents.eventCode = eventCode;
             return this;
         }
-        public Builder setEventTime(String eventTime){
-            newEldEldEvents.eventTime=eventTime;
+
+        public Builder setEventTime(String eventTime) {
+            newEldEldEvents.eventTime = eventTime;
             return this;
         }
-        public Builder setEventDate(String eventDate){
-            newEldEldEvents.eventDate=eventDate;
+
+        public Builder setEventDate(String eventDate) {
+            newEldEldEvents.eventDate = eventDate;
             return this;
         }
-        public Builder setAccumulatedVehicleMiles(double accumulatedVehicleMiles){
-            newEldEldEvents.accumulatedVehicleMiles =accumulatedVehicleMiles;
+
+        public Builder setAccumulatedVehicleMiles(double accumulatedVehicleMiles) {
+            newEldEldEvents.accumulatedVehicleMiles = accumulatedVehicleMiles;
             return this;
         }
-        public Builder setElapsedEngineHours(double elapsedEngineHours){
-            newEldEldEvents.elapsedEngineHours =elapsedEngineHours;
+
+        public Builder setElapsedEngineHours(double elapsedEngineHours) {
+            newEldEldEvents.elapsedEngineHours = elapsedEngineHours;
             return this;
         }
-        public Builder setLatitude(String latitude){
-            newEldEldEvents.latitude=latitude;
+
+        public Builder setLatitude(String latitude) {
+            newEldEldEvents.latitude = latitude;
             return this;
         }
-        public Builder setLongitude(String longitude){
-            newEldEldEvents.longitude=longitude;
+
+        public Builder setLongitude(String longitude) {
+            newEldEldEvents.longitude = longitude;
             return this;
         }
-        public Builder setOrderNumberForRecordOriginator(String orderNumberForRecordOriginator){
-            newEldEldEvents.orderNumberForRecordOriginator=orderNumberForRecordOriginator;
+
+        public Builder setOrderNumberForRecordOriginator(String orderNumberForRecordOriginator) {
+            newEldEldEvents.orderNumberForRecordOriginator = orderNumberForRecordOriginator;
             return this;
         }
-        public Builder setDistanceLastValidCoordinates(double distanceLastValidCoordinates){
-            newEldEldEvents.distanceLastValidCoordinates=distanceLastValidCoordinates;
+
+        public Builder setDistanceLastValidCoordinates(double distanceLastValidCoordinates) {
+            newEldEldEvents.distanceLastValidCoordinates = distanceLastValidCoordinates;
             return this;
         }
-        public Builder setDataDiagnosticEventIndicatorStatus(int dataDiagnosticEventIndicatorStatus){
-            newEldEldEvents.dataDiagnosticEventIndicatorStatus=dataDiagnosticEventIndicatorStatus;
+
+        public Builder setDataDiagnosticEventIndicatorStatus(int dataDiagnosticEventIndicatorStatus) {
+            newEldEldEvents.dataDiagnosticEventIndicatorStatus = dataDiagnosticEventIndicatorStatus;
             return this;
         }
-        public Builder setMalfunctionIndicatorStatus(int malfunctionIndicatorStatus){
-            newEldEldEvents.malfunctionIndicatorStatus=malfunctionIndicatorStatus;
+
+        public Builder setMalfunctionIndicatorStatus(int malfunctionIndicatorStatus) {
+            newEldEldEvents.malfunctionIndicatorStatus = malfunctionIndicatorStatus;
             return this;
         }
-        public Builder setEventDataCheckValue(String eventDataCheckValue){
-            newEldEldEvents.eventDataCheckValue=eventDataCheckValue;
+
+        public Builder setEventDataCheckValue(String eventDataCheckValue) {
+            newEldEldEvents.eventDataCheckValue = eventDataCheckValue;
             return this;
         }
-        public Builder setOrderNumber(String orderNumber){
-            newEldEldEvents.orderNumber=orderNumber;
+
+        public Builder setOrderNumber(String orderNumber) {
+            newEldEldEvents.orderNumber = orderNumber;
             return this;
         }
-        public EldEvents build(){
+
+        public EldEvents build() {
+            newEldEldEvents.setEventTimeStamp();
             return newEldEldEvents;
         }
     }

@@ -375,6 +375,7 @@ public class Event {
         }
 
         public Event build() {
+            event.setEventName();
             return event;
         }
     }

@@ -25,14 +25,13 @@ public class MalfunctionsAndDataDiagnosticEvents extends EventCSV {
     @Override
     public void compareEventsFromCsvAndDb(List<Event> eventsFromDb) {
         Optional<Event> foundEvent = findEventFromCsvInDb(eventsFromDb);
-        setEventTimeStamp();
-
         try {
             log.info("*** CHECK: Compare event form CSV and DB: ELD Sequence = " + foundEvent.get().getEldSequence());
+            if (foundEvent.get().getRecordStatus()==2)
+                errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> This event cannot have RS = 2!");
             checkIntValue(foundEvent.get().getEventCode(), getEventCode(), "getEventCode", foundEvent.get().getEldSequence());
             checkStringValue(foundEvent.get().getMalfunctionDiagnosticCode(),getMalfunctionOrDiagnosticCode(), "getMalfunctionOrDiagnosticCodeventCode",foundEvent.get().getEldSequence());
-            //checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()), csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp", foundEvent.get().getEldSequence());
-            checkEventTimestamp(setTimeZoneByDriverHomeTerminalTimeZone(foundEvent.get().getEventTimestamp()).getTime(), getEventTimeStamp().getTime(), foundEvent.get().getEldSequence());
+            checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()), csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp", foundEvent.get().getEldSequence());
             checkDoubleValue(foundEvent.get().getTotalVehicleMiles(), getTotalVehicleMiles(), "getTotalVehicleMiles", foundEvent.get().getEldSequence());
             checkDoubleValue(foundEvent.get().getTotalEngineHours(), getTotalEngineHours(), "getTotalEngineHours", foundEvent.get().getEldSequence());
         } catch (NoSuchElementException e) {
@@ -40,7 +39,7 @@ public class MalfunctionsAndDataDiagnosticEvents extends EventCSV {
             errorLogs.add("ELD Sequence= " + Integer.parseInt(eventSequence, 16) + "-> No Such Event!");
         } finally {
             if (errorLogs.size() > 0) {
-                ErrorsLog.createNewSubAnchor("ELD Sequence = " + eventSequence);
+                ErrorsLog.createNewSubAnchorNotBold("ELD Sequence = " + eventSequence);
                 errorLogs.forEach(message -> ErrorsLog.writeCsvTestResultToReport(message, false));
                 errorLogs.clear();
             }
@@ -95,6 +94,7 @@ public class MalfunctionsAndDataDiagnosticEvents extends EventCSV {
         }
 
         public MalfunctionsAndDataDiagnosticEvents build() {
+            newMalfunctionsAndDataDiagnosticEvents.setEventTimeStamp();
             return newMalfunctionsAndDataDiagnosticEvents;
         }
     }
