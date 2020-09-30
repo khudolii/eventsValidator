@@ -33,7 +33,6 @@ public class ErrorsLog {
     private static Chapter catPart;
 
 
-
     public static void createReportFile(String driverId, int numOfEvents) {
         try {
             document = new Document();

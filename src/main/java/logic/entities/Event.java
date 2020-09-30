@@ -19,6 +19,7 @@ public class Event {
     private String timeZoneOffset;
     private String trailerNumber;
     private String shippingNumber;
+    private String locationDescription;
     private long orgId;
     private String eLogAppMode;
     private int recordOrigin;
@@ -38,7 +39,7 @@ public class Event {
     }
 
     public void setEventName() {
-        this.eventName = defineEventType(eventType,eventCode);
+        this.eventName = defineEventType(eventType, eventCode);
     }
 
     public long getEventSequence() {
@@ -47,6 +48,10 @@ public class Event {
 
     public String getEldSequence() {
         return eldSequence;
+    }
+
+    public void setEventTimestamp(Date eventTimestamp) {
+        this.eventTimestamp = eventTimestamp;
     }
 
     public long getDriverId1() {
@@ -93,6 +98,10 @@ public class Event {
         return eLogAppMode;
     }
 
+    public String getLocationDescription() {
+        return locationDescription;
+    }
+
     public int getRecordOrigin() {
         return recordOrigin;
     }
@@ -126,7 +135,9 @@ public class Event {
     }
 
     public String getLatitude() {
+        if (latitude!=null)
         return latitude;
+        else return "";
     }
 
     public String getLongitude() {
@@ -201,11 +212,14 @@ public class Event {
         }
         return EventType.CERTIFICATION;
     }
-    public static class Builder{
+
+    public static class Builder {
         private Event event;
-        public Builder(){
-            this.event=new Event();
+
+        public Builder() {
+            this.event = new Event();
         }
+
         public Builder setEventSequence(long eventSequence) {
             event.eventSequence = eventSequence;
             return this;
@@ -238,7 +252,7 @@ public class Event {
 
         public Builder setEventTimestamp(String eventTimestamp) {
             try {
-                event.eventTimestamp =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(eventTimestamp);
+                event.eventTimestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(eventTimestamp);
             } catch (ParseException e) {
                 System.out.println(e);
             }
@@ -267,6 +281,14 @@ public class Event {
 
         public Builder seteLogAppMode(String eLogAppMode) {
             event.eLogAppMode = eLogAppMode;
+            return this;
+        }
+
+        public Builder setLocationDescription(String locationDescription) {
+            if (locationDescription != null)
+                event.locationDescription = locationDescription;
+            else
+                event.locationDescription = "";
             return this;
         }
 
@@ -329,7 +351,8 @@ public class Event {
             event.comment = comment;
             return this;
         }
-        public Event build(){
+
+        public Event build() {
             return event;
         }
     }
@@ -338,15 +361,15 @@ public class Event {
     public String toString() {
         return
                 eventName +
-                ", TIME=" + eventTimestamp +
-                ", RO=" + recordOrigin +
-                ", RS=" + recordStatus +
-                ", TVM=" + totalVehicleMiles +
-                ", AVM=" + accumulatedVehicleMiles +
-                ", TEH=" + totalEngineHours +
-                ", EEH=" + elapsedEngineHours +
-                ", LAT='" + latitude + '\'' +
-                ", LONG='" + longitude + '\'';
+                        ", TIME=" + eventTimestamp +
+                        ", RO=" + recordOrigin +
+                        ", RS=" + recordStatus +
+                        ", TVM=" + totalVehicleMiles +
+                        ", AVM=" + accumulatedVehicleMiles +
+                        ", TEH=" + totalEngineHours +
+                        ", EEH=" + elapsedEngineHours +
+                        ", LAT='" + latitude + '\'' +
+                        ", LONG='" + longitude + '\'';
     }
 
 }

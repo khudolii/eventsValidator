@@ -13,8 +13,33 @@ import java.sql.SQLException;
 
 @WebServlet("/QaTool")
 public class QaToolServlet extends HttpServlet {
+    private static int certNum = 0;
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String actionName = req.getParameter("actionName");
+        switch (actionName) {
+            case "createEvent":
+                createEvent(req, resp);
+                break;
+            case "addGroupOfEvent": {
+                /*if (EventDAO.addBlockOfEventsToDriver(Long.parseLong(req.getParameter("driverId")),
+                        Long.parseLong(req.getParameter("truckId")),
+                        Integer.parseInt(req.getParameter("orgId")),
+                        Integer.parseInt(req.getParameter("days"))))
+                    System.out.println("Inserted!");
+                else
+                    System.out.println("ERROR!");*/
+                System.out.println(Long.parseLong(req.getParameter("driverId")) + " " +
+                        Long.parseLong(req.getParameter("truckId")) + " " +
+                        Integer.parseInt(req.getParameter("orgId")) + " " +
+                        Integer.parseInt(req.getParameter("days")));
+            }
+            break;
+        }
+    }
+
+    private void createEvent(HttpServletRequest req, HttpServletResponse resp) {
 
         System.out.println(req.getParameter("eventType"));
         System.out.println(req.getParameter("driverId"));
@@ -22,77 +47,92 @@ public class QaToolServlet extends HttpServlet {
         System.out.println(req.getParameter("orgId"));
         System.out.println(req.getParameter("date"));
         System.out.println(req.getParameter("time"));
-        if(!req.getParameter("eventType").equals("BDX")){
-        int eventType = 0;
-        int eventCode = 0;
-        int ro=0;
-        switch (req.getParameter("eventType")){
-            case "On Duty": {
-                eventType=1;
-                eventCode=4;
-                ro=2;
-            }break;
-            case "Off Duty": {
-                eventType=1;
-                eventCode=1;
-                ro=2;
-            }break;
-            case "Sleep": {
-                eventType=1;
-                eventCode=2;
-                ro=2;
-            }break;
-            case "Driving": {
-                eventType=1;
-                eventCode=3;
-                ro=1;
-            }break;
-            case "Intermediate": {
-                eventType=2;
-                eventCode=1;
-                ro=1;
-            }break;
-            case "Logout": {
-                eventType=5;
-                eventCode=2;
-                ro=1;
-            }break;
-            case "PowerUp": {
-                eventType=6;
-                eventCode=1;
-                ro=1;
-            }break;
-            case "PowerDown": {
-                eventType=6;
-                eventCode=3;
-                ro=1;
-            }break;
-            case "Login": {
-                eventType=5;
-                eventCode=1;
-                ro=1;
-            }break;
-        }
+        /*if (!req.getParameter("eventType").equals("BDX")) {
+            int eventType = 0;
+            int eventCode = 0;
+            int ro = 0;
+            switch (req.getParameter("eventType")) {
+                case "On Duty": {
+                    eventType = 1;
+                    eventCode = 4;
+                    ro = 2;
+                }
+                break;
+                case "Off Duty": {
+                    eventType = 1;
+                    eventCode = 1;
+                    ro = 2;
+                }
+                break;
+                case "Sleep": {
+                    eventType = 1;
+                    eventCode = 2;
+                    ro = 2;
+                }
+                break;
+                case "Driving": {
+                    eventType = 1;
+                    eventCode = 3;
+                    ro = 1;
+                }
+                break;
+                case "Intermediate": {
+                    eventType = 2;
+                    eventCode = 1;
+                    ro = 1;
+                }
+                break;
+                case "Logout": {
+                    eventType = 5;
+                    eventCode = 2;
+                    ro = 1;
+                }
+                break;
+                case "PowerUp": {
+                    eventType = 6;
+                    eventCode = 1;
+                    ro = 1;
+                }
+                break;
+                case "PowerDown": {
+                    eventType = 6;
+                    eventCode = 3;
+                    ro = 1;
+                }
+                break;
+                case "Login": {
+                    eventType = 5;
+                    eventCode = 1;
+                    ro = 1;
+                }
+                break;
+                case "Cert": {
+                    eventType = 4;
+                    certNum++;
+                    eventCode = certNum;
+                    ro = 2;
+                }
+                break;
+            }
 
-        Event event = new Event
-                .Builder()
-                .setDriverId1(Long.parseLong(req.getParameter("driverId")))
-                .setTruckId(Long.parseLong(req.getParameter("truckId")))
-                .setOrgId(Long.parseLong(req.getParameter("orgId")))
-                .setEventTimestamp(req.getParameter("date") + " " + req.getParameter("time")+":00")
-                .setRecordOrigin(ro)
-                .setEventType(eventType)
-                .setEventCode(eventCode)
-                .setRecordStatus(1)
-                .setLatitude("M")
-                .setLongitude("M")
-                .build();
+            Event event = new Event
+                    .Builder()
+                    .setDriverId1(Long.parseLong(req.getParameter("driverId")))
+                    .setTruckId(Long.parseLong(req.getParameter("truckId")))
+                    .setOrgId(Long.parseLong(req.getParameter("orgId")))
+                    .setEventTimestamp(req.getParameter("date") + " " + req.getParameter("time") + ":00")
+                    .setRecordOrigin(ro)
+                    .setEventType(eventType)
+                    .setEventCode(eventCode)
+                    .setRecordStatus(1)
+                    .setLatitude("M")
+                    .setLongitude("M")
+                    .build();
             try {
                 EventDAO.createEvents(event);
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
-        }
-
+        }*/
     }
 }
