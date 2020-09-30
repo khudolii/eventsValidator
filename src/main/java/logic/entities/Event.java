@@ -25,6 +25,7 @@ public class Event {
     private int recordStatus;
     private int eventType;
     private int eventCode;
+    private String locationDescription;
     private double totalVehicleMiles;
     private double accumulatedVehicleMiles;
     private double totalEngineHours;
@@ -36,6 +37,31 @@ public class Event {
     private int malfunctionIndicatorStatus;
     private int dataDiagnosticEventIndicatorStatus;
     private String malfunctionDiagnosticCode;
+    private String dataCheckValue;
+    private String driverCertified;
+    private String country;
+    private String provState;
+    private String city;
+
+    public String getDataCheckValue() {
+        return dataCheckValue;
+    }
+
+    public String getDriverCertified() {
+        return driverCertified;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public String getProvState() {
+        return provState;
+    }
+
+    public String getCity() {
+        return city;
+    }
 
     public EventType getEventName() {
         return eventName;
@@ -71,6 +97,14 @@ public class Event {
 
     public String getTruckNumber() {
         return truckNumber;
+    }
+
+    public String getLocationDescription() {
+        return locationDescription;
+    }
+
+    public void setEventTimestamp(Date eventTimestamp) {
+        this.eventTimestamp = eventTimestamp;
     }
 
     public String getTruckVin() {
@@ -146,12 +180,14 @@ public class Event {
     }
 
     public String getLatitude() {
-        return latitude;
-    }
+        if (latitude!=null)
+            return latitude;
+        else return "";    }
 
     public String getLongitude() {
-        return longitude;
-    }
+        if (longitude!=null)
+            return longitude;
+        else return "";    }
 
     public String getComment() {
         return comment;
@@ -238,7 +274,13 @@ public class Event {
             event.eldSequence = eldSequence;
             return this;
         }
-
+        public Builder setLocationDescription(String locationDescription) {
+            if (locationDescription != null)
+                event.locationDescription = locationDescription;
+            else
+                event.locationDescription = "";
+            return this;
+        }
         public Builder setDriverId1(long driverId1) {
             event.driverId1 = driverId1;
             return this;
@@ -319,6 +361,7 @@ public class Event {
         }
 
         public Builder setMalfunctionDiagnosticCode(String malfunctionDiagnosticCode) {
+            if (malfunctionDiagnosticCode==null) malfunctionDiagnosticCode = "";
             event.malfunctionDiagnosticCode = malfunctionDiagnosticCode;
             return this;
         }
@@ -377,6 +420,32 @@ public class Event {
         public Event build() {
             event.setEventName();
             return event;
+        }
+
+        public Builder setDataCheckValue(String dataCheckValue) {
+            if (dataCheckValue==null) dataCheckValue = "";
+            event.dataCheckValue = dataCheckValue;
+            return this;
+        }
+
+        public Builder setDriverCertified(String driverCertified) {
+            event.driverCertified = driverCertified;
+            return this;
+        }
+
+        public Builder setCountry(String country) {
+            event.country = country;
+            return  this;
+        }
+
+        public Builder setProvState(String provState) {
+            event.provState = provState;
+            return this;
+        }
+
+        public Builder setCity(String city) {
+            event.city = city;
+            return this;
         }
     }
 

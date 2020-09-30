@@ -48,7 +48,7 @@ public class CsvValidator {
         csvReader = new CsvReader(reader);
         try {
             currentDriver = DriverDAO.getDriver(ValidatorAttributes.getDriverId());
-            this.events = EventDAO.getEvents();
+            this.events = EventDAO.getEvents(Long.parseLong(ValidatorAttributes.getDriverId()),ValidatorAttributes.getDateFrom(),ValidatorAttributes.getDateTo());
             trucks = findTrucks(events);
             userList = findCoDrivers(trucks);
         } catch (SQLException throwables) {

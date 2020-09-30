@@ -121,7 +121,7 @@
                             <option value="findCoDrivers">Find Co-Drivers</option>
                         </select>
                     </div>
-                    <form action="QaTool" method="GET" class="hide createEvent">
+                    <form id="qaTool" action="QaTool" method="GET" class="hide createEvent">
                         <input value="createEvent" name="actionName" class="hide form-control">
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
@@ -129,49 +129,72 @@
                                 </div>
                                 <select name="eventType" class="custom-select" id="inputGroupSelect01">
                                     <option selected>Choose event...</option>
-                                    <option value="On Duty">On Duty</option>
-                                    <option value="Off Duty">Off Duty</option>
-                                    <option value="Sleep">Sleep</option>
-                                    <option value="Driving">Driving</option>
-                                    <option value="Intermediate">Intermediate event</option>
-                                    <option value="Login">Login</option>
-                                    <option value="Logout">Logout</option>
-                                    <option value="PowerUp">PowerUp</option>
-                                    <option value="PowerDown">PowerDown</option>
-                                    <option value="Intermediate">Intermediate event</option>
+                                    <option value="On Duty">ON DUTY</option>
+                                    <option value="Off Duty">OFF DUTY</option>
+                                    <option value="Sleep">SLEEPER BERTH</option>
+                                    <option value="Driving">DRIVING</option>
+                                    <option value="Intermediate">INTERMEDIATE EVENT</option>
+                                    <option value="Login">LOGIN</option>
+                                    <option value="Logout">LOGOUT</option>
+                                    <option value="PowerUp">POWER UP</option>
+                                    <option value="PowerDown">POWER DOWN</option>
                                     <option value="BDX">BDX</option>
-                                    <option value="Cert">Certefication</option>
+                                    <option value="Cert">CERTIFICATION</option>
                                 </select>
                             </div>
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Driver ID</span>
                                 </div>
-                                <input name="driverId" placeholder="Driver ID" pattern="[0-9]{2,7}"
+                                <input name="driverId" required placeholder="Driver ID" pattern="[0-9]{2,7}"
                                        class="form-control"/>
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Truck ID</span>
                                 </div>
-                                <input name="truckId" placeholder="Truck ID" pattern="[0-9]{2,7}"
+                                <input name="truckId" required placeholder="Truck ID" pattern="[0-9]{2,7}"
                                        class="form-control"/>
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Org ID</span>
                                 </div>
-                                <input name="orgId" placeholder="Org ID" pattern="[0-9]{2,7}"
+                                <input name="orgId" required placeholder="Org ID" pattern="[0-9]{2,7}"
                                        class="form-control"/>
                             </div>
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Date</span>
                                 </div>
-                                <input name="date" id="date" type="date"
+                                <input name="date"  required id="date" type="date"
                                        pattern="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
                                        class="form-control"/>
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Time</span>
                                 </div>
-                                <input type="time" id="time" name="time"/>
+                                <input required type="time" id="time" name="time"/>
                             </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">RO</span>
+                            </div>
+                            <input required value="1" name="ro"  pattern="[0-9]"
+                                   class="form-control"/>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">TVM</span>
+                            </div>
+                            <input required value="0" name="tvm"  pattern="[0-9]{1,7}"
+                                   class="form-control"/>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">TEH</span>
+                            </div>
+                            <input name="teh" required value="0" pattern="[0-9]{1,7}"
+                                   class="form-control"/>
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Location</span>
+                            </div>
+                            <input required value="New York, NY, US" name="location"
+                                   class="form-control"/>
+                        </div>
                             <input type="submit" value="Submit" class="btn btn-primary btn-lg btn-block"/>
                     </form>
                     <form action="QaTool" method="GET">
@@ -181,19 +204,19 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Driver ID</span>
                                 </div>
-                                <input name="driverId" placeholder="Driver ID" pattern="[0-9]{2,7}"
+                                <input name="driverId" required placeholder="Driver ID" pattern="[0-9]{2,7}"
                                        class="form-control"/>
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Truck ID</span>
                                 </div>
-                                <input name="truckId" placeholder="Truck ID" pattern="[0-9]{2,7}"
+                                <input name="truckId" required placeholder="Truck ID" pattern="[0-9]{2,7}"
                                        class="form-control"/>
                             </div>
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Org ID</span>
                                 </div>
-                                <input name="orgId" placeholder="Org ID" pattern="[0-9]{2,7}"
+                                <input name="orgId" required placeholder="Org ID" pattern="[0-9]{2,7}"
                                        class="form-control"/>
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Num of Days</span>

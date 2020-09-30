@@ -31,11 +31,7 @@ public class ReportServlet extends HttpServlet {
         resp.setHeader("Pragma", "public");
         resp.setContentType("application/pdf");
         List<Event> events = null;
-        try {
-            events = EventDAO.getEvents();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        events = EventDAO.getEvents(Long.parseLong(ValidatorAttributes.getDriverId()),ValidatorAttributes.getDateFrom(),ValidatorAttributes.getDateTo());
         ErrorsLog.createReportFile(ValidatorAttributes.getDriverId(), events.size());
         new EventsValidator(events).toAnalyzeEvent();
         ServletOutputStream outputStream = resp.getOutputStream();

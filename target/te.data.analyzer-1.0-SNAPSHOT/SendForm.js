@@ -121,16 +121,27 @@ function hideBtn() {
     document.getElementById('downloadReport').setAttribute('class', 'btn btn-outline-dark');
 }
 
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', function () {
     var select = document.querySelector('#actionName'),
         hide = document.querySelectorAll('.hide');
-    function change()
-    {
-        [].forEach.call(hide, function(el) {
+
+    function change() {
+        [].forEach.call(hide, function (el) {
             var add = el.classList.contains(select.value) ? "add" : "remove"
             el.classList[add]('show');
         });
     }
+
     select.addEventListener('change', change);
     change()
+});
+
+window.addEventListener('load', function () {
+    const form = document.getElementById("qaTool");
+
+    // ...to take over the submit event
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        alert("Done")
+    });
 });
