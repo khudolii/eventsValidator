@@ -133,7 +133,7 @@ public class CsvReader {
                             .setEldAuthenticated(csvFileRowsList.get(i + 6)[2])
                             .setOutputFileComment(csvFileRowsList.get(i + 6)[3])
                             .build();
-                    header="";
+                    header = "";
                 }
                 break;
                 case USER_LIST: {
@@ -277,7 +277,7 @@ public class CsvReader {
             }
             if (row.length != expectedElementsInRow && !header.equals(ELD_FILE_HEADER_SEGMENT) && !header.equals(END_OF_FILE) && !header.equals("")) {
                 ErrorsLog.writeCsvTestResultToReport("Block: " + header + ". Invalid number of elements per line, actual= " + row.length + " ," +
-                        " but expected = " + expectedElementsInRow + ".\n Line: " + Arrays.toString(row),false);
+                        " but expected = " + expectedElementsInRow + ".\n Line: " + Arrays.toString(row), false);
             }
         }
     }

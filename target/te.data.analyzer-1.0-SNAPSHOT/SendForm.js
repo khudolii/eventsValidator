@@ -85,7 +85,7 @@ window.addEventListener('load', function () {
             alert('The file has been sent to the server and verified! You can download the PDF report.');
             document.getElementById('downloadReport').removeAttribute('disabled');
             document.getElementById('downloadReport').removeAttribute('class');
-            document.getElementById('downloadReport').setAttribute('class', 'btn btn-info btn-lg btn-block');
+            document.getElementById('downloadReport').setAttribute('class', 'btn btn-info');
 
         });
 
@@ -118,5 +118,19 @@ function hideBtn() {
     document.hhhgs.submit();
     document.getElementById('downloadReport').setAttribute('disabled', true);
     document.getElementById('downloadReport').removeAttribute('class');
-    document.getElementById('downloadReport').setAttribute('class', 'btn btn-outline-dark btn-lg btn-block');
+    document.getElementById('downloadReport').setAttribute('class', 'btn btn-outline-dark');
 }
+
+window.addEventListener('DOMContentLoaded', function() {
+    var select = document.querySelector('#actionName'),
+        hide = document.querySelectorAll('.hide');
+    function change()
+    {
+        [].forEach.call(hide, function(el) {
+            var add = el.classList.contains(select.value) ? "add" : "remove"
+            el.classList[add]('show');
+        });
+    }
+    select.addEventListener('change', change);
+    change()
+});

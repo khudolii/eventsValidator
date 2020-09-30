@@ -36,8 +36,9 @@ public class CmvEnginePowerUpAndShutDownEvents  extends EventCSV {
         Optional <Event> foundEvent = findEventFromCsvInDb(eventsFromDb);
         try{
             log.info("*** CHECK: Compare event form CSV and DB: ELD Sequence = " + foundEvent.get().getEldSequence());
+            checkIntValue(6, getEventType(), "getEventType", foundEvent.get().getEldSequence());
             checkIntValue(foundEvent.get().getEventCode(), getEventCode(), "getEventCode",foundEvent.get().getEldSequence());
-            checkStringValue(buildEventTimestampByMilis(foundEvent.get().getEventTimestamp().getTime()) , csvTimeFormatToTimestamp(getEventDate(), getEventTime()), "getEventTimeStamp",foundEvent.get().getEldSequence());
+            //checkEventTimestamp(foundEvent.get().getEventTimestamp(),getEventTimeStamp(),foundEvent.get().getEldSequence());
             checkDoubleValue(foundEvent.get().getTotalVehicleMiles(),getTotalVehicleMiles(),"getTotalVehicleMiles",foundEvent.get().getEldSequence());
             checkDoubleValue(foundEvent.get().getTotalEngineHours(), getTotalEngineHours() , "getTotalEngineHours",foundEvent.get().getEldSequence());
             checkCoordinatesValue(foundEvent.get().getLongitude(), getLongitude(), "getLongitude",foundEvent.get().getEldSequence());
@@ -114,6 +115,7 @@ public class CmvEnginePowerUpAndShutDownEvents  extends EventCSV {
         }
 
         public CmvEnginePowerUpAndShutDownEvents build(){
+            //newCmvEnginePowerUpAndShutDownEvents.setEventTimeStamp();
             return newCmvEnginePowerUpAndShutDownEvents;
         }
     }
